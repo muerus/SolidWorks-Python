@@ -65,12 +65,19 @@ run out-of-process over pywin32/L5 for users without the add-in.
   out-of-process pywin32 objects (thin adapter).
 
 ## L4 - Tools & UI
-- Task pane (WinForms): editor, Run (Ctrl+Enter), REPL line, output log.
+- Task pane (WinForms + Scintilla): tabbed editor with hot-exit backups, Run (F5/Ctrl+Enter), REPL line,
+  output log, find/replace, light/dark themes, settings in `%LOCALAPPDATA%\SwPy\editor.json`.
+- IntelliSense via `swpy._editor` (called through `swpy._host.call`): completion from the live session
+  plus static .NET type info of the interop (follows calls without executing them), buffer
+  assignment inference, signature help, hover, syntax check, F1 -> online API help.
 - Script toolbar: scripts folder -> command group buttons.
 - Events: `swpy.on("rebuild", fn)` wired to `DPartDocEvents` etc.
 
 ## L5 - External bridge
-- JSON-RPC 2.0 over named pipe `\\.\pipe\swpy` (and/or `localhost`),
+- **Implemented as COM** instead of a pipe: `ISwPyAddIn.Execute(session, code)` via
+  `ISldWorks.GetAddInObject("SwPy.AddIn")`, marshalled to the UI thread (~3 ms round trip);
+  Python client `swpy.client.connect()`. The pipe design below was not needed.
+- (original plan) JSON-RPC 2.0 over named pipe `\\.\pipe\swpy` (and/or `localhost`),
   requests marshalled to the UI thread by the dispatcher.
 - Methods: `exec`, `eval`, `get_context`. Clients: Python `swpy.connect()`,
   Excel-DNA, Grasshopper, an MCP server.
@@ -83,5 +90,6 @@ run out-of-process over pywin32/L5 for users without the add-in.
 | 1 | L0+L1+L2 solid: sessions, output capture, errors, logging | pytest suite via pywin32 harness |
 | 2 | L3 `swpy` core: units, dims/globals, mass, batch | pytest against a generated test part |
 | 3 | L4 task pane editor + REPL | manual + screenshot |
-| 4 | L5 named-pipe bridge + `swpy.connect()` | pytest over the pipe |
+| 4 | L5 bridge (done over COM) + `swpy.client.connect()` | pytest via client |
 | 5 | Packaging: embeddable Python, `# r:` installs, installer | clean-user install test |
+| 6 | Editor IDE features + user guide/API reference | pane + editor-service tests, guide examples executed (`test_docs.py`) |

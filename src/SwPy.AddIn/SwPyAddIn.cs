@@ -107,6 +107,7 @@ namespace SwPy
                 }
                 _pane.Runner = Run;
                 _pane.Resetter = session => PythonHost.Get(this).Reset(session);
+                _pane.Services = new EditorServices(() => PythonHost.Get(this), () => PythonHost.IsStarted);
                 Log.Info("Task pane created");
             }
             catch (Exception ex)
@@ -156,6 +157,7 @@ namespace SwPy
         public string Pane(string command, string arg)
         {
             if (_pane == null) throw new InvalidOperationException("Editor pane not created");
+            if (command == "show") return Main.Invoke(() => { _taskpane?.ShowView(); return ""; });
             return Main.Invoke(() => _pane.Command(command, arg));
         }
 

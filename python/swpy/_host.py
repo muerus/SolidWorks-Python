@@ -95,14 +95,11 @@ def _jsonable(value):
         return False
 
 
-def run(session, code, stream=False):
-    """Execute code in a persistent session. Returns a JSON string.
-
-    stream: forward stdout/stderr live to the add-in (editor pane) while running.
-    """
-    g = _sessions.get(session)
+def _session(name):
+    """Globals of a session (created on first use) with `sw`, `doc` and `model` refreshed."""
+    g = _sessions.get(name)
     if g is None:
-        g = _sessions[session] = _new_globals(session)
+        g = _sessions[name] = _new_globals(name)
     g["sw"] = _sw
     try:
         g["doc"] = active_doc()
@@ -113,7 +110,32 @@ def run(session, code, stream=False):
             g["model"] = None
     except Exception:   # never let a doc lookup block running code (e.g. the reload that fixes it)
         g["doc"] = g["model"] = None
+    return g
 
+
+def call(method, args_json):
+    """Editor services (swpy._editor) for the task pane: complete, signature, hover, check.
+
+    args_json: {"session": ..., **kwargs}. Returns JSON {"ok": true, "value": ...} or {"ok": false, "error"}.
+    Never raises: a broken completion must not disturb typing.
+    """
+    try:
+        from swpy import _editor
+        if method.startswith("_") or not hasattr(_editor, method):
+            raise AttributeError(f"unknown editor service {method!r}")
+        args = json.loads(args_json or "{}")
+        g = _session(args.pop("session", "editor"))
+        return json.dumps({"ok": True, "value": getattr(_editor, method)(g, **args)})
+    except Exception as e:
+        return json.dumps({"ok": False, "error": f"{type(e).__name__}: {e}"})
+
+
+def run(session, code, stream=False):
+    """Execute code in a persistent session. Returns a JSON string.
+
+    stream: forward stdout/stderr live to the add-in (editor pane) while running.
+    """
+    g = _session(session)
     out = io.StringIO()
     live = bool(stream) and _addin is not None
     tee_out, tee_err = _Tee(out, False, live), _Tee(out, True, live)

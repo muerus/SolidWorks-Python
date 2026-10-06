@@ -20,6 +20,8 @@ class _Casts:
         def cast(obj):
             return None if obj is None else Com(obj, prefer=name)
         cast.__name__ = name
+        cast.__swpy_interface__ = name   # lets the editor type `sldworks.IFoo(x).` statically
+        cast.__doc__ = f"View a SOLIDWORKS object as {name} (returns a typed Com proxy, None for None)."
         setattr(self, name, cast)   # cache
         return cast
 

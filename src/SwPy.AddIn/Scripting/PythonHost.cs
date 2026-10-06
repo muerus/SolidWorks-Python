@@ -20,6 +20,9 @@ namespace SwPy.Scripting
 
         public PythonInstall Install => _engine;
 
+        /// <summary>True once Python runs and swpy._host is imported (editor services avoid starting it while typing).</summary>
+        public static bool IsStarted => _instance != null;
+
         /// <summary>
         /// The engine starts once; importing swpy._host is retried on every call until it succeeds
         /// (a broken script package must not need a SOLIDWORKS restart once fixed).
@@ -91,6 +94,18 @@ namespace SwPy.Scripting
             using (var c = new PyString(code ?? ""))
             using (var st = stream ? PyObject.FromManagedObject(true) : PyObject.FromManagedObject(false))
             using (var result = _host.InvokeMethod("run", s, c, st))
+            {
+                return result.As<string>();
+            }
+        }
+
+        /// <summary>Editor service call: swpy._host.call(method, json) -> JSON (never throws in Python).</summary>
+        public string Call(string method, string json)
+        {
+            using (Py.GIL())
+            using (var m = new PyString(method))
+            using (var j = new PyString(json ?? "{}"))
+            using (var result = _host.InvokeMethod("call", m, j))
             {
                 return result.As<string>();
             }

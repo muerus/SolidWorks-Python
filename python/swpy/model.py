@@ -55,16 +55,22 @@ X, Y, Z = Vec(1, 0, 0), Vec(0, 1, 0), Vec(0, 0, 1)
 class Query(list):
     """A list of faces/edges with chainable filters. Every filter returns a new Query."""
 
-    def where(self, predicate):
+    ITEM = None   # SOLIDWORKS interface of the items (editor completion)
+
+    def where(self, predicate) -> "SELF":
+        """Items for which predicate(item) is true (exceptions count as false)."""
         return type(self)(e for e in self if _safe(predicate, e))
 
-    def largest(self):
+    def largest(self) -> "ITEM":
+        """Biggest item (area for faces, length for edges), or None if empty."""
         return max(self, key=self._size) if self else None
 
-    def smallest(self):
+    def smallest(self) -> "ITEM":
+        """Smallest item (area for faces, length for edges), or None if empty."""
         return min(self, key=self._size) if self else None
 
-    def sort(self, key=None, reverse=False):
+    def sort(self, key=None, reverse=False) -> "SELF":
+        """New query sorted by key (default: size, ascending)."""
         return type(self)(sorted(self, key=key or self._size, reverse=reverse))
 
     def select(self, append=False):
@@ -92,30 +98,38 @@ def _doc_of(entity):
 
 
 class Faces(Query):
+    """Faces of a model (IFace2 proxies). Get one from `model.faces`."""
+
+    ITEM = "IFace2"
+
     @staticmethod
     def _size(f):
         return f.GetArea()
 
-    def planar(self):
+    def planar(self) -> "Faces":
+        """Flat faces."""
         return self.where(lambda f: f.GetSurface().IsPlane())
 
-    def cylindrical(self):
+    def cylindrical(self) -> "Faces":
+        """Cylindrical faces (holes, bosses, fillets on straight edges)."""
         return self.where(lambda f: f.GetSurface().IsCylinder())
 
-    def normal(self, direction, tol=1e-6):
+    def normal(self, direction, tol=1e-6) -> "Faces":
         """Planar faces whose outward normal points along `direction`."""
         d = Vec(direction).unit()
         return self.planar().where(lambda f: Vec(f.Normal).unit().dot(d) > 1 - tol)
 
-    def radius(self, r, tol=1e-9):
+    def radius(self, r, tol=1e-9) -> "Faces":
         """Cylindrical faces with radius r (SI)."""
         return self.cylindrical().where(lambda f: abs(f.GetSurface().CylinderParams[6] - r) <= tol)
 
-    def area(self, lo=0.0, hi=float("inf")):
+    def area(self, lo=0.0, hi=float("inf")) -> "Faces":
+        """Faces with lo <= area <= hi (m^2)."""
         return self.where(lambda f: lo <= f.GetArea() <= hi)
 
     @property
-    def edges(self):
+    def edges(self) -> "Edges":
+        """All edges bounding these faces (each edge once)."""
         seen, out = set(), Edges()
         for f in self:
             for e in f.GetEdges() or []:
@@ -126,33 +140,43 @@ class Faces(Query):
 
 
 class Edges(Query):
+    """Edges of a model (IEdge proxies). Get one from `model.edges` or `faces.edges`."""
+
+    ITEM = "IEdge"
+
     @staticmethod
     def _size(e):
         c = e.GetCurve()
         lo, hi = c.GetEndParams()[1:3]
         return c.GetLength3(lo, hi)
 
-    def linear(self):
+    def linear(self) -> "Edges":
+        """Straight edges."""
         return self.where(lambda e: e.GetCurve().IsLine())
 
-    def circular(self):
+    def circular(self) -> "Edges":
+        """Circular edges (full circles and arcs)."""
         return self.where(lambda e: e.GetCurve().IsCircle())
 
-    def parallel(self, direction, tol=1e-6):
+    def parallel(self, direction, tol=1e-6) -> "Edges":
+        """Straight edges parallel (either sense) to `direction`."""
         d = Vec(direction).unit()
         return self.linear().where(lambda e: abs(Vec(e.GetCurve().LineParams[3:6]).unit().dot(d)) > 1 - tol)
 
-    def radius(self, r, tol=1e-9):
+    def radius(self, r, tol=1e-9) -> "Edges":
+        """Circular edges with radius r (SI)."""
         return self.circular().where(lambda e: abs(e.GetCurve().CircleParams[6] - r) <= tol)
 
-    def length(self, lo=0.0, hi=float("inf")):
+    def length(self, lo=0.0, hi=float("inf")) -> "Edges":
+        """Edges with lo <= length <= hi (m)."""
         return self.where(lambda e: lo <= self._size(e) <= hi)
 
 
-# ---------------------------------------------------------------- dimensions / globals
 class Planes(tuple):
     """The three default reference planes. SOLIDWORKS keeps them first in the tree and they
     cannot be deleted or reordered, so position is stable while names are template-defined."""
+
+    ITEM = "IFeature"
 
     def __new__(cls, ref_planes):
         planes = tuple(ref_planes)[:3]
@@ -160,13 +184,26 @@ class Planes(tuple):
             raise LookupError(f"expected 3 default planes, found {len(planes)}")
         return super().__new__(cls, planes)
 
-    front = property(lambda self: self[0])
-    top = property(lambda self: self[1])
-    right = property(lambda self: self[2])
+    @property
+    def front(self) -> "IFeature":
+        """Front plane (XY in standard templates)."""
+        return self[0]
+
+    @property
+    def top(self) -> "IFeature":
+        """Top plane (XZ in standard templates)."""
+        return self[1]
+
+    @property
+    def right(self) -> "IFeature":
+        """Right plane (YZ in standard templates)."""
+        return self[2]
 
     def __repr__(self):
         return "<Planes " + ", ".join(p.Name for p in self) + ">"
 
+
+# ---------------------------------------------------------------- dimensions / globals
 
 class Dims:
     """model.dims["D1@Boss-Extrude1"] -> SI float; assignment updates and rebuilds."""
@@ -191,6 +228,7 @@ class Dims:
         return self._m.doc.Parameter(name) is not None
 
     def names(self):
+        """Names of all displayed dimensions, e.g. ['D1@Sketch1', 'D1@Boss-Extrude1']."""
         out = []
         for f in self._m.features():
             dd = f.GetFirstDisplayDimension()
@@ -201,6 +239,7 @@ class Dims:
         return out
 
     def items(self):
+        """{name: SI value} for every dimension."""
         return {n: self[n] for n in self.names()}
 
     def __repr__(self):
@@ -274,9 +313,11 @@ class Globals:
         return name in self._index()
 
     def names(self):
+        """Names of the global variables."""
         return list(self._index())
 
     def items(self):
+        """{name: value} for every global variable."""
         return {n: self[n] for n in self.names()}
 
     def __repr__(self):
@@ -285,8 +326,9 @@ class Globals:
 
 # ---------------------------------------------------------------- model
 class Model:
-    """Pythonic wrapper around an IModelDoc2."""
+    """Pythonic wrapper around an IModelDoc2. In scripts, `model` is the active document."""
 
+    doc: "IModelDoc2"   # the wrapped document (auto-typed Com proxy)
     _current_doc = None
 
     def __init__(self, doc):
@@ -297,49 +339,59 @@ class Model:
 
     # -- info ---------------------------------------------------------------
     @property
-    def title(self):
+    def title(self) -> str:
+        """Document title as shown in the window ('Part1', 'bracket.SLDPRT')."""
         return self.doc.GetTitle()
 
     @property
-    def dims(self):
+    def dims(self) -> "Dims":
+        """Dimensions by full name: model.dims["D1@Boss-Extrude1"] = 30 * mm."""
         return Dims(self)
 
     @property
-    def globals(self):
+    def globals(self) -> "Globals":
+        """Global variables: model.globals["Width"] = 120 * mm."""
         return Globals(self)
 
     @property
-    def mass(self):
+    def mass(self) -> dict:
+        """Mass properties in SI: {'mass', 'volume', 'area', 'center', 'density'}."""
         mp = self.doc.Extension.CreateMassProperty()
         return {"mass": mp.Mass, "volume": mp.Volume, "area": mp.SurfaceArea,
                 "center": Vec(mp.CenterOfMass), "density": mp.Density}
 
-    def bodies(self, solid=True):
+    def bodies(self, solid=True) -> list:
+        """Solid (or surface, solid=False) bodies of a part, as IBody2 proxies."""
         part = self.doc.as_("IPartDoc")
         return list(part.GetBodies2(0 if solid else 1, True) or [])
 
     @property
-    def faces(self):
+    def faces(self) -> "Faces":
+        """All faces of all solid bodies, as a chainable Faces query."""
         return Faces(f for b in self.bodies() for f in (b.GetFaces() or []))
 
     @property
-    def edges(self):
+    def edges(self) -> "Edges":
+        """All edges of all solid bodies, as a chainable Edges query."""
         return Edges(e for b in self.bodies() for e in (b.GetEdges() or []))
 
-    def features(self):
+    def features(self) -> list:
+        """All features in tree order (IFeature proxies), including hidden system features."""
         return list(self.doc.FeatureManager.GetFeatures(True) or [])
 
-    def feature(self, name):
+    def feature(self, name) -> "IFeature":
+        """Feature by name ('Boss-Extrude1'), or None."""
         return self.doc.FeatureByName(name)
 
     @property
-    def planes(self):
+    def planes(self) -> "Planes":
         """Default Front/Top/Right planes (also `[0]`, `[1]`, `[2]`), found by position so
         templates that rename them (e.g. "XY PLANE") still work."""
         return Planes(f for f in self.features() if f.GetTypeName2() == "RefPlane")
 
     # -- rebuild control ------------------------------------------------------
     def rebuild(self, force=False):
+        """Rebuild changed features (force=True: rebuild everything)."""
         return self.doc.ForceRebuild3(False) if force else self.doc.EditRebuild3()
 
     def _changed(self):

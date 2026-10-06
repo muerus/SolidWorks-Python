@@ -20,7 +20,7 @@ model.faces.planar().normal(Z).largest().select()  # geometry queries
 print(model.mass["mass"], "kg")
 ```
 
-<p align="center"><img src="docs/images/editor.png" alt="SwPy editor in the SOLIDWORKS task pane" width="640"></p>
+<p align="center"><img src="docs/images/demo.gif" alt="SwPy: completion, parameter hints and running a script in the SOLIDWORKS task pane" width="640"></p>
 
 ## Contents
 

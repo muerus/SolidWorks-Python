@@ -6,6 +6,8 @@ url: https://muerus.github.io
 baseurl: /SolidWorks-Python
 lang: en
 author: muerus
+webmaster_verifications:
+  google: esvacjAM9wvEOon4TQOT393lu3Qon44IveXh7tkEwYI
 logo: /images/social-preview.png
 twitter:
   card: summary_large_image

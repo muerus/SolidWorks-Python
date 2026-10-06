@@ -9,7 +9,12 @@ import ast
 import contextlib
 import io
 import json
+import time
 import traceback
+
+from swpy import packages
+
+packages.site_dir()   # previously installed `# r:` packages are importable in every session
 
 from swpy._interop import sldworks, swconst
 from swpy.com import Com
@@ -56,8 +61,45 @@ def _split_trailing_expression(tree):
     return tree, None
 
 
-def run(session, code):
-    """Execute code in a persistent session. Returns a JSON string."""
+class _Tee(io.TextIOBase):
+    """Captures output and, for streamed runs, forwards it live to the editor pane (throttled)."""
+
+    def __init__(self, buf, error, live):
+        self._buf, self._error, self._live = buf, error, live
+        self._pending, self._last = [], 0.0
+
+    def write(self, s):
+        self._buf.write(s)
+        if self._live:
+            self._pending.append(s)
+            now = time.perf_counter()
+            if now - self._last > 0.05 or len(self._pending) > 200:
+                self.flush()
+        return len(s)
+
+    def flush(self):
+        if self._live and self._pending:
+            text, self._pending = "".join(self._pending), []
+            self._last = time.perf_counter()
+            try:
+                _addin.Write(text, self._error)
+            except Exception:
+                self._live = False
+
+
+def _jsonable(value):
+    try:
+        json.dumps(value)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def run(session, code, stream=False):
+    """Execute code in a persistent session. Returns a JSON string.
+
+    stream: forward stdout/stderr live to the add-in (editor pane) while running.
+    """
     g = _sessions.get(session)
     if g is None:
         g = _sessions[session] = _new_globals(session)
@@ -73,19 +115,29 @@ def run(session, code):
         g["doc"] = g["model"] = None
 
     out = io.StringIO()
+    live = bool(stream) and _addin is not None
+    tee_out, tee_err = _Tee(out, False, live), _Tee(out, True, live)
     res = {"ok": True, "stdout": "", "result": None, "error": None}
     try:
-        tree, last = _split_trailing_expression(ast.parse(code, FILENAME, "exec"))
-        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        with contextlib.redirect_stdout(tee_out), contextlib.redirect_stderr(tee_err):
+            reqs = packages.requirements(code)
+            if reqs:
+                packages.ensure(reqs, log=tee_out.write)
+            tree, last = _split_trailing_expression(ast.parse(code, FILENAME, "exec"))
             exec(compile(tree, FILENAME, "exec"), g)
             if last is not None:
                 value = eval(compile(last, FILENAME, "eval"), g)
                 if value is not None:
                     g["_"] = value
                     res["result"] = repr(value)
+                    if _jsonable(value):
+                        res["value"] = value
     except BaseException as e:   # SystemExit/KeyboardInterrupt must not escape into SOLIDWORKS
         res["ok"] = False
         res["error"] = _format_user_error(e)
+    finally:
+        tee_out.flush()
+        tee_err.flush()
     res["stdout"] = out.getvalue()
     return json.dumps(res)
 

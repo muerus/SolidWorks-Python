@@ -51,7 +51,7 @@ namespace SwPy
                 Main = new MainThread();
                 Instance = this;
                 Log.Info($"Connected to SOLIDWORKS {Sw.RevisionNumber()} (add-in {Version()}, dir {AssemblyResolver.AddInDir})");
-                CreatePane();
+                if (!Flag("SWPY_NO_PANE")) CreatePane();
                 return true;
             }
             catch (Exception ex)
@@ -61,13 +61,15 @@ namespace SwPy
             }
         }
 
+        private static bool Flag(string name) => System.Environment.GetEnvironmentVariable(name) == "1";
+
         public bool DisconnectFromSW()
         {
             Log.Info("Disconnecting");
             try
             {
-                _taskpane?.DeleteView();
-                if (_taskpane != null) Marshal.ReleaseComObject(_taskpane);
+                if (!Flag("SWPY_SKIP_DELETEVIEW")) _taskpane?.DeleteView();
+                if (_taskpane != null && !Flag("SWPY_SKIP_RELEASE")) Marshal.ReleaseComObject(_taskpane);
             }
             catch (Exception ex)
             {
@@ -75,12 +77,16 @@ namespace SwPy
             }
             _taskpane = null;
             _pane = null;
-            Main?.Dispose();
+            if (!Flag("SWPY_SKIP_DISPOSE")) Main?.Dispose();
             Main = null;
             Instance = null;
             Sw = null;
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            if (!Flag("SWPY_SKIP_GC"))
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            Log.Info("Disconnected");
             return true;
         }
 
@@ -109,13 +115,15 @@ namespace SwPy
             }
         }
 
-        private ExecResult Run(string session, string code)
+        private ExecResult Run(string session, string code, bool stream)
         {
             var watch = Stopwatch.StartNew();
             try
             {
-                var json = PythonHost.Get(this).Execute(session, code);
-                return ExecResult.Parse(json, watch.ElapsedMilliseconds);
+                var json = PythonHost.Get(this).Execute(session, code, stream);
+                var r = ExecResult.Parse(json, watch.ElapsedMilliseconds);
+                r.Streamed = stream;
+                return r;
             }
             catch (Exception ex)
             {
@@ -123,6 +131,9 @@ namespace SwPy
                 return ExecResult.HostError("Host error: " + ex, watch.ElapsedMilliseconds);
             }
         }
+
+        /// <summary>Live output sink for streamed runs (called by swpy._host on the main thread).</summary>
+        public void Write(string text, bool error) => _pane?.StreamWrite(text, error);
 
         // ---------------------------------------------------------------- automation
 

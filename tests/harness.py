@@ -60,7 +60,8 @@ def exit_sw(timeout=60):
                           capture_output=True, text=True).stdout.count("SLDWORKS.exe") == 0:
             return
         time.sleep(1)
-    raise TimeoutError("SOLIDWORKS did not exit")
+    subprocess.run(["taskkill", "/F", "/IM", "SLDWORKS.exe"], capture_output=True)
+    raise TimeoutError("SOLIDWORKS did not exit (killed)")
 
 
 class SwPy:

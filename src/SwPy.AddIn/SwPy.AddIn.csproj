@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="pythonnet" Version="3.2.0" />
+    <PackageReference Include="Scintilla5.NET" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +40,8 @@
   <!-- Ship the swpy Python package next to the add-in DLL. -->
   <ItemGroup>
     <None Include="..\..\python\swpy\**\*.py" Link="python\swpy\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Bundled embeddable CPython (tools\fetch_python.ps1), if present -->
+    <None Include="..\..\runtime\python\**\*" Link="python-runtime\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

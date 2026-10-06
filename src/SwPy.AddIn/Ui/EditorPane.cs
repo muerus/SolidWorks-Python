@@ -28,7 +28,7 @@ namespace SwPy.Ui
         private static readonly Color ResultColor = Color.FromArgb(30, 90, 170);
         private static readonly Color EchoColor = Color.Gray;
 
-        private readonly RichTextBox _editor;
+        private readonly ICodeEditor _editor;
         private readonly RichTextBox _output;
         private readonly TextBox _repl;
         private readonly ToolStripLabel _status;
@@ -37,8 +37,8 @@ namespace SwPy.Ui
         private int _historyIndex;
         private string _currentFile;
 
-        /// <summary>Runs code in a session; set by the add-in when the pane is attached.</summary>
-        internal Func<string, string, ExecResult> Runner { get; set; }
+        /// <summary>Runs code in a session (session, code, stream output live); set by the add-in.</summary>
+        internal Func<string, string, bool, ExecResult> Runner { get; set; }
 
         /// <summary>Clears a session; set by the add-in.</summary>
         internal Action<string> Resetter { get; set; }
@@ -63,16 +63,7 @@ namespace SwPy.Ui
             tools.Items.Add(new ToolStripSeparator());
             tools.Items.Add(_file);
 
-            _editor = new RichTextBox
-            {
-                Dock = DockStyle.Fill,
-                Font = CodeFont,
-                AcceptsTab = true,
-                WordWrap = false,
-                DetectUrls = false,
-                BorderStyle = BorderStyle.None,
-                ScrollBars = RichTextBoxScrollBars.Both,
-            };
+            _editor = CodeEditors.Create();
             _editor.KeyDown += EditorKeyDown;
 
             _output = new RichTextBox
@@ -99,7 +90,7 @@ namespace SwPy.Ui
             bottom.Controls.Add(replRow);
 
             var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterWidth = 5 };
-            split.Panel1.Controls.Add(_editor);
+            split.Panel1.Controls.Add(_editor.Control);
             split.Panel2.Controls.Add(bottom);
 
             var statusBar = new StatusStrip { SizingGrip = false };
@@ -121,10 +112,11 @@ namespace SwPy.Ui
 
         internal void RunEditor()
         {
-            var code = _editor.SelectionLength > 0 ? _editor.SelectedText : _editor.Text;
+            var selection = _editor.SelectedText;
+            var code = string.IsNullOrEmpty(selection) ? _editor.Text : selection;
             if (string.IsNullOrWhiteSpace(code)) return;
             var lines = code.Split('\n').Length;
-            Append($"# run {(_editor.SelectionLength > 0 ? "selection" : _file.Text)} ({lines} line{(lines == 1 ? "" : "s")})\n", EchoColor);
+            Append($"# run {(string.IsNullOrEmpty(selection) ? _file.Text : "selection")} ({lines} line{(lines == 1 ? "" : "s")})\n", EchoColor);
             Execute(code);
             SaveScratch();
         }
@@ -150,13 +142,13 @@ namespace SwPy.Ui
             ExecResult r;
             try
             {
-                r = Runner(Session, code.Replace("\r\n", "\n"));
+                r = Runner(Session, code.Replace("\r\n", "\n"), true);
             }
             finally
             {
                 UseWaitCursor = false;
             }
-            if (!string.IsNullOrEmpty(r.Stdout)) Append(r.Stdout, ForeColor);
+            if (!r.Streamed && !string.IsNullOrEmpty(r.Stdout)) Append(r.Stdout, ForeColor);
             if (r.Result != null) Append(r.Result + "\n", ResultColor);
             if (!r.Ok) Append(r.Error ?? "Unknown error\n", ErrorColor);
             SetStatus((r.Ok ? "Done" : "Error") + $" in {r.ElapsedMs} ms");
@@ -173,6 +165,13 @@ namespace SwPy.Ui
         {
             _status.Text = text;
             _status.Owner?.Refresh();
+        }
+
+        /// <summary>Live script output (called from Python while the script runs on this thread).</summary>
+        internal void StreamWrite(string text, bool error)
+        {
+            Append(text, error ? ErrorColor : ForeColor);
+            _output.Update();   // repaint now without pumping messages (no re-entrancy)
         }
 
         private void Append(string text, Color color)
@@ -192,30 +191,12 @@ namespace SwPy.Ui
             if (e.Control && e.KeyCode == Keys.Enter) { Handled(e); RunEditor(); }
             else if (e.Control && e.KeyCode == Keys.S) { Handled(e); SaveFile(false); }
             else if (e.Control && e.KeyCode == Keys.O) { Handled(e); OpenFile(); }
-            else if (e.Control && e.KeyCode == Keys.V) { Handled(e); PastePlain(); }
-            else if (e.KeyCode == Keys.Tab && !e.Shift) { Handled(e); _editor.SelectedText = "    "; }
-            else if (e.KeyCode == Keys.Enter && !e.Control) { Handled(e); NewLineWithIndent(); }
         }
 
         private static void Handled(KeyEventArgs e)
         {
             e.Handled = true;
             e.SuppressKeyPress = true;
-        }
-
-        private void PastePlain()
-        {
-            if (Clipboard.ContainsText()) _editor.SelectedText = Clipboard.GetText().Replace("\t", "    ");
-        }
-
-        private void NewLineWithIndent()
-        {
-            var line = _editor.GetLineFromCharIndex(_editor.SelectionStart);
-            var lineStart = _editor.GetFirstCharIndexFromLine(line);
-            var current = _editor.Text.Substring(lineStart, _editor.SelectionStart - lineStart);
-            var indent = current.Substring(0, current.Length - current.TrimStart(' ').Length);
-            if (current.TrimEnd().EndsWith(":")) indent += "    ";
-            _editor.SelectedText = "\n" + indent;
         }
 
         private void ReplKeyDown(object sender, KeyEventArgs e)
@@ -317,6 +298,7 @@ namespace SwPy.Ui
                 case "set_text": _editor.Text = arg ?? ""; return "";
                 case "get_text": return _editor.Text;
                 case "select": { var p = arg.Split(','); _editor.Select(int.Parse(p[0]), int.Parse(p[1])); return ""; }
+                case "editor": return _editor.GetType().Name;
                 case "run": RunEditor(); return _output.Text;
                 case "repl": RunRepl(arg); return _output.Text;
                 case "output": return _output.Text;

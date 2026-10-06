@@ -67,3 +67,13 @@ def test_reset_clears_variables(pane):
 def test_doc_and_sw_available(pane):
     out = pane("repl", "sw.RevisionNumber()")
     assert "28." in out or "29." in out or "3" in out
+
+
+def test_scintilla_editor_loaded(pane):
+    assert pane("editor", "") == "ScintillaEditor"
+
+
+def test_streamed_output_appears_once(pane):
+    pane("set_text", "for i in range(3):\n    print('line', i)\n")
+    out = pane("run", "")
+    assert out.count("line 0") == 1 and out.count("line 2") == 1

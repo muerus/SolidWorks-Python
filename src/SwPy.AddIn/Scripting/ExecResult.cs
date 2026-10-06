@@ -11,6 +11,7 @@ namespace SwPy.Scripting
         public string Result;
         public string Error;
         public long ElapsedMs;
+        public bool Streamed;
 
         private static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
 

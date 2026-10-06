@@ -16,6 +16,9 @@ import subprocess
 import sys
 
 _HEADER = re.compile(r"^\s*#\s*r\s*:\s*(.+?)\s*$")
+# PEP 508 subset: name, optional [extras], optional comma-separated version specifiers. No URLs/options.
+_SPEC = r"\s*(==|!=|>=|<=|~=|>|<)\s*[A-Za-z0-9.*+!_-]+"
+_REQUIREMENT = re.compile(rf"^[A-Za-z0-9][A-Za-z0-9._-]*(\[[A-Za-z0-9._,-]+\])?({_SPEC}(\s*,{_SPEC})*)?$")
 _NAME = re.compile(r"^\s*([A-Za-z0-9_.\-\[\]]+)\s*(==\s*([^\s,;]+))?")
 CREATE_NO_WINDOW = 0x08000000
 
@@ -30,12 +33,20 @@ def site_dir():
 
 
 def requirements(code):
-    """Requirement specs from `# r:` comment lines (anywhere in the script, like Rhino)."""
+    """Requirement specs from `# r:` comment lines (anywhere in the script, like Rhino).
+
+    Only plain PyPI requirements are accepted (`name`, `name[extra]`, `name>=1,<2`). Anything else - pip
+    options like `--index-url`, URLs, paths - raises ValueError, so a script header cannot point pip at
+    another package source or pass it arbitrary options.
+    """
     reqs = []
     for line in code.splitlines():
         m = _HEADER.match(line)
         if m:
-            reqs += [r.strip() for r in re.split(r"[,\s]+(?=[A-Za-z])", m.group(1)) if r.strip()]
+            reqs += [r.strip() for r in re.split(r"[,\s]+(?=[A-Za-z-])", m.group(1)) if r.strip()]
+    bad = [r for r in reqs if not _REQUIREMENT.match(r)]
+    if bad:
+        raise ValueError(f"# r: only accepts PyPI package names with optional versions, not {', '.join(bad)}")
     return reqs
 
 

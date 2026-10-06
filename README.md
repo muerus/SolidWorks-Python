@@ -30,6 +30,7 @@ print(model.mass["mass"], "kg")
 - [How it works](#how-it-works)
 - [Project structure](#project-structure)
 - [Development](#development)
+- [Security](#security)
 - [Changelog](#changelog)
 - [License](#license)
 
@@ -194,6 +195,12 @@ powershell tools\register.ps1                    # per-user COM registration of 
 
 See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the test layout, the dev loop (reloading Python without
 restarting SOLIDWORKS), conventions and release builds. Logs: `%LOCALAPPDATA%\SwPy\logs\swpy.log`.
+
+## Security
+
+SwPy runs scripts with your Windows permissions inside SOLIDWORKS - treat scripts like macros and
+only run code you trust. See [SECURITY.md](SECURITY.md) for the trust model and how to report a
+vulnerability.
 
 ## Changelog
 

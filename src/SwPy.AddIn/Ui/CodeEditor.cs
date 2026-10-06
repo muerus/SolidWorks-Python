@@ -720,7 +720,9 @@ namespace SwPy.Ui
             var pos = _sci.CurrentPosition;
             var end = _sci.WordEndPosition(pos, true);
             var info = Services.Hover(TextBefore(end));
-            var url = info?.Help ?? "https://help.solidworks.com/";
+            const string helpSite = "https://help.solidworks.com/";
+            var url = info?.Help ?? helpSite;
+            if (!url.StartsWith(helpSite, StringComparison.OrdinalIgnoreCase)) url = helpSite;   // never launch anything else
             try
             {
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });

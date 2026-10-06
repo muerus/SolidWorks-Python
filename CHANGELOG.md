@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+- `# r:` headers only accept PyPI package names and version specifiers (pip options, URLs and paths
+  are rejected).
+- `tools/fetch_python.ps1` pins Python and pip and verifies their SHA-256.
+- F1 help only opens help.solidworks.com URLs.
+- `SECURITY.md`: trust model and private vulnerability reporting.
+
 ### Added
 - **Building models**: `model.sketch(...)` (line, rect, circle, arc, polyline, centerline ...),
   `extrude`, `cut`, `revolve`, `fillet`, `chamfer`, `shell`; assemblies (`add_component`, `components`,

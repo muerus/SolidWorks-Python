@@ -28,3 +28,12 @@ def test_r_header_installs_and_imports(swpy):
     assert "1" in r["result"]
     r2 = swpy.ok(code, "pkg")                      # second time: already satisfied, no install message
     assert "installing" not in r2["stdout"]
+
+
+def test_requirement_headers_cannot_pass_pip_options_or_urls():
+    import pytest
+    for header in ("# r: --index-url https://evil.example pkg", "# r: -e git+https://x/y.git",
+                   "# r: https://evil.example/pkg.whl", "# r: ../local/pkg", "# r: pkg; rm -rf"):
+        with pytest.raises(ValueError, match="only accepts PyPI package names"):
+            packages.requirements(header)
+    assert packages.requirements("# r: requests[socks]>=2.31,<3") == ["requests[socks]>=2.31,<3"]

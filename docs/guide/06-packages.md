@@ -28,8 +28,11 @@ then the script continues. Later runs start immediately because the package is a
 
 * One or more packages per line, separated by commas or spaces; several `# r:` lines are allowed,
   anywhere in the script.
-* Use pip requirement syntax. An exact pin (`==`) is checked against the installed version and
+* Use pip requirement syntax: a package name, optional extras and version specifiers
+  (`requests[socks]>=2.31,<3`). An exact pin (`==`) is checked against the installed version and
   re-installed if different; other specifiers install the package if it is missing.
+* For safety only PyPI package names are accepted: pip options (`--index-url ...`), URLs and paths are
+  rejected with an error, so a script header cannot point pip at another package source.
 
 ## Where packages go
 

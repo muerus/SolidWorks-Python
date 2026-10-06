@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **Building models**: `model.sketch(...)` (line, rect, circle, arc, polyline, centerline ...),
+  `extrude`, `cut`, `revolve`, `fillet`, `chamfer`, `shell`; assemblies (`add_component`, `components`,
+  `mate`, `mates`, `bom`, `component_planes`, faces/edges across components); drawings
+  (`create_drawing`, `add_view`, `sheets`, `views`); `save` and `export` by file extension (PDF of all
+  sheets); `FeatureError` instead of silent failures.
 - **Script buttons**: every `.py` in the script folder (default `Documents\SwPy\Scripts`) is a tool in
   the pane's Scripts menu and on a SwPy toolbar / menu / CommandManager tab (shown by SOLIDWORKS for
   machine-wide installs); `startup\` scripts run when SOLIDWORKS is first idle; failing scripts open with

@@ -50,7 +50,7 @@ def _new_globals(name):
         "swconst": swconst,
         **libraries,                       # cosworks, swmotionstudy, swdimxpert, EdmLib ... (lazy)
         "Model": _model.Model, "Vec": _model.Vec, "X": _model.X, "Y": _model.Y, "Z": _model.Z,
-        "on": _events.on, "off": _events.off, "ui": _ui,
+        "on": _events.on, "off": _events.off, "ui": _ui, "FeatureError": _model.FeatureError,
     }
     g.update({k: getattr(_units, k) for k in ("mm", "cm", "m", "inch", "ft", "deg", "rad", "kg", "g", "to")})
     return g

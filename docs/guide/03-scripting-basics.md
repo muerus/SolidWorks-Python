@@ -18,6 +18,7 @@ These names are predefined - no imports needed:
 | `on`, `off` | Subscribe / unsubscribe event handlers (see [Events](10-events.md)) |
 | `ui` | Progress bar, messages, questions, prompts, file dialogs (see [chapter 11](11-scripts-and-ui.md)) |
 | `cosworks`, `swmotionstudy`, ... | The other SOLIDWORKS API libraries (see [chapter 5](05-solidworks-api.md#other-api-libraries)) |
+| `FeatureError` | Raised when SOLIDWORKS refuses to build something (see [Building models](12-building-models.md)) |
 | `_` | The value of the last expression shown |
 
 `doc` and `model` are refreshed **at the start of every run**, so they always follow the document you

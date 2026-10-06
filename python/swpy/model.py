@@ -15,6 +15,7 @@ import re
 
 from swpy.com import Com
 from swpy.units import EQUATION_UNITS, mm
+from swpy.build import FeatureError, Sketch  # noqa: F401  (Model.sketch annotation; re-exported)
 
 
 # ---------------------------------------------------------------- vectors
@@ -361,9 +362,40 @@ class Model:
                 "center": Vec(mp.CenterOfMass), "density": mp.Density}
 
     def bodies(self, solid=True) -> list:
-        """Solid (or surface, solid=False) bodies of a part, as IBody2 proxies."""
+        """Solid (or surface, solid=False) bodies, as IBody2 proxies. For assemblies: the bodies of all
+        components, in assembly context (their faces and edges can be selected and mated)."""
+        kind = 0 if solid else 1
+        if self.is_assembly:
+            out = []
+            for comp in self.doc.as_("IAssemblyDoc").GetComponents(False) or []:
+                if comp.IsSuppressed():
+                    continue
+                result = comp.GetBodies3(kind, None)
+                bodies = result[0] if isinstance(result, tuple) else result
+                out.extend(bodies or [])
+            return out
         part = self.doc.as_("IPartDoc")
-        return list(part.GetBodies2(0 if solid else 1, True) or [])
+        return list(part.GetBodies2(kind, True) or [])
+
+    @property
+    def is_part(self) -> bool:
+        """True for part documents."""
+        return "IPartDoc" in self.doc.interfaces
+
+    @property
+    def is_assembly(self) -> bool:
+        """True for assembly documents."""
+        return "IAssemblyDoc" in self.doc.interfaces
+
+    @property
+    def is_drawing(self) -> bool:
+        """True for drawing documents."""
+        return "IDrawingDoc" in self.doc.interfaces
+
+    @property
+    def path(self) -> str:
+        """Full file path ('' until the document is saved)."""
+        return self.doc.GetPathName()
 
     @property
     def faces(self) -> "Faces":
@@ -426,3 +458,107 @@ class Model:
 
     def __repr__(self):
         return f"<Model {self.title!r}>"
+
+    # -- building parts (swpy.build) -------------------------------------------
+    def sketch(self, on) -> "Sketch":
+        """`with model.sketch(plane_or_face) as s:` - draw with s.line / s.rect / s.circle / s.arc /
+        s.polyline / s.centerline (sketch coordinates, SI). The sketch closes at the end of the block."""
+        from swpy.build import Sketch
+        return Sketch(self, on)
+
+    def extrude(self, sketch, depth, reverse=False, both=False, merge=True, draft=0.0) -> "IFeature":
+        """Boss-extrude a sketch by depth (both=True: mid-plane). Raises FeatureError on failure."""
+        from swpy import build
+        return build.extrude(self, sketch, depth, reverse, both, merge, draft)
+
+    def cut(self, sketch, depth=None, reverse=False, both=False) -> "IFeature":
+        """Cut-extrude a sketch through all (depth=None) or by depth."""
+        from swpy import build
+        return build.cut(self, sketch, depth, reverse, both)
+
+    def revolve(self, sketch, angle=None, cut=False, merge=True) -> "IFeature":
+        """Revolve a sketch around its centerline (full turn by default; cut=True removes material)."""
+        from swpy import build
+        return build.revolve(self, sketch, angle, cut, merge)
+
+    def fillet(self, edges, radius) -> "IFeature":
+        """Constant-radius fillet on edges (an edge, a list or an Edges query)."""
+        from swpy import build
+        return build.fillet(self, edges, radius)
+
+    def chamfer(self, edges, distance, angle=None) -> "IFeature":
+        """Distance-angle chamfer on edges (45 degrees by default)."""
+        from swpy import build
+        return build.chamfer(self, edges, distance, angle)
+
+    def shell(self, faces, thickness, outward=False) -> "IFeature":
+        """Hollow the part with wall thickness, removing faces (a face, a list or a Faces query)."""
+        from swpy import build
+        return build.shell(self, faces, thickness, outward)
+
+    # -- assemblies (swpy.assembly) ----------------------------------------------
+    def components(self, top_level=True) -> list:
+        """Components of an assembly (IComponent2)."""
+        from swpy import assembly
+        return assembly.components(self, top_level)
+
+    def component(self, name) -> "IComponent2":
+        """Component by name ('bracket-1'), or None."""
+        from swpy import assembly
+        return assembly.component(self, name)
+
+    def add_component(self, path, at=(0.0, 0.0, 0.0), config="") -> "IComponent2":
+        """Insert a part/assembly file at a position (SI); opens it silently if needed."""
+        from swpy import assembly
+        return assembly.add_component(self, path, at, config)
+
+    def component_planes(self, component) -> "Planes":
+        """Front/Top/Right planes of a component, for mates."""
+        from swpy import assembly
+        return assembly.component_planes(component)
+
+    def mate(self, a, b, kind="coincident", align="closest", flip=False, distance=0.0, angle=0.0) -> "IMate2":
+        """Mate two entities: coincident, concentric, parallel, perpendicular, tangent, distance, angle."""
+        from swpy import assembly
+        return assembly.mate(self, a, b, kind, align, flip, distance, angle)
+
+    def mates(self) -> list:
+        """Mate features of an assembly (IFeature; GetTypeName2() is 'MateCoincident', ...)."""
+        from swpy import assembly
+        return assembly.mates(self)
+
+    def bom(self, top_level=True) -> list:
+        """Bill of materials: [{'path', 'name', 'config', 'quantity'}]."""
+        from swpy import assembly
+        return assembly.bom(self, top_level)
+
+    # -- drawings, saving, export (swpy.drawing) ------------------------------------
+    def create_drawing(self, template=None, views="standard") -> "Model":
+        """New drawing of this saved part/assembly with standard views (or a list like ['*Front'])."""
+        from swpy import drawing
+        return drawing.create_drawing(self, template, views)
+
+    def add_view(self, model_path, view="*Front", at=(0.1, 0.1)) -> "IView":
+        """Drawing: insert a named model view at a sheet position (m)."""
+        from swpy import drawing
+        return drawing.add_view(self, model_path, view, at)
+
+    def sheets(self) -> list:
+        """Drawing: sheet names."""
+        from swpy import drawing
+        return drawing.sheets(self)
+
+    def views(self) -> list:
+        """Drawing: views (IView) of the active sheet."""
+        from swpy import drawing
+        return drawing.views(self)
+
+    def export(self, path, all_sheets=True) -> str:
+        """Save a copy as .step/.x_t/.igs/.stl/.pdf/.dxf/.dwg/.png ... (format from the extension)."""
+        from swpy import drawing
+        return drawing.export(self, path, all_sheets)
+
+    def save(self, path=None) -> str:
+        """Save (or save as path). Raises FeatureError with the reasons on failure."""
+        from swpy import drawing
+        return drawing.save(self, path)

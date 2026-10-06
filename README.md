@@ -57,6 +57,9 @@ print(model.mass["mass"], "kg")
 - Dimensions and global variables as dictionaries, and `model.batch()` for one rebuild after many edits.
 - Mass properties, features, default planes that work with any template.
 - Chainable face/edge queries: `model.faces.cylindrical().radius(5 * mm).edges.circular().select()`.
+- Build geometry: `with model.sketch(model.planes.front) as s: s.rect(...)`, `model.extrude(s, 20 * mm)`,
+  `cut`, `revolve`, `fillet`, `chamfer`, `shell`; assemblies (`add_component`, `mate`, `bom`); drawings
+  (`create_drawing`) and `model.export("part.step" | "drawing.pdf" ...)`.
 
 **Full SOLIDWORKS API**
 - Automatic typing: no casts. Objects expose the members of every interface they implement.
@@ -138,6 +141,7 @@ The **[user guide](docs/guide/README.md)** covers everything:
 | [Troubleshooting](docs/guide/09-troubleshooting.md) | Logs and common errors |
 | [Events](docs/guide/10-events.md) | Handlers for rebuilds, saves, selections, document switches |
 | [Script buttons and UI](docs/guide/11-scripts-and-ui.md) | Script folder, buttons, startup scripts, progress (Esc cancels), dialogs |
+| [Building models](docs/guide/12-building-models.md) | Sketches, features, assemblies and mates, drawings, export |
 | [API reference](docs/guide/api-reference.md) | Every public class and function |
 
 Every runnable example in the guide is executed against SOLIDWORKS by the test suite.

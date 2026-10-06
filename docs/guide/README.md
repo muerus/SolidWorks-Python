@@ -17,6 +17,7 @@ packages, and remote control from Jupyter or any Python.
 | [9. Troubleshooting](09-troubleshooting.md) | Logs, common errors and their fixes |
 | [10. Events](10-events.md) | Run Python when SOLIDWORKS rebuilds, saves, selects, switches documents |
 | [11. Script buttons and user interaction](11-scripts-and-ui.md) | Script folder, toolbar buttons, startup scripts, progress bars, dialogs |
+| [12. Building models](12-building-models.md) | Sketches, extrude/cut/revolve/fillet/chamfer/shell, assemblies and mates, drawings, export |
 | [API reference](api-reference.md) | Every public class, function and constant of `swpy` |
 
 Conventions used throughout:

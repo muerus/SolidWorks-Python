@@ -12,7 +12,8 @@ model                     # <Model 'Part1'>
 model.title               # 'Part1' - the window title
 ```
 
-For a document that is not active, wrap it yourself: `Model(other_doc)`.
+For a document that is not active, wrap it yourself: `Model(other_doc)`. To **create** geometry, assemblies
+and drawings, see [Building models](12-building-models.md).
 
 ## Dimensions
 

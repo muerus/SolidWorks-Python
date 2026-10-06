@@ -1,6 +1,7 @@
 # 8. Recipes
 
-Complete scripts for common jobs. They build on each other in order (the first one creates and saves
+Complete scripts for common jobs, written with the raw API so you can see what happens underneath;
+[Building models](12-building-models.md) shows shorter versions of several of them. They build on each other in order (the first one creates and saves
 `plate.SLDPRT`, later ones work on the active document), and each can be adapted on its own. Files
 go to `%TEMP%\swpy-recipes`.
 

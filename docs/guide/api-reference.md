@@ -55,8 +55,34 @@ Pythonic wrapper around an `IModelDoc2` (a proxy or a raw COM object). In script
 | `features()` | All features in tree order (`IFeature`), including hidden system features |
 | `feature(name)` | Feature by name, or `None` |
 | `planes` | [`Planes`](#class-planes) - the default Front/Top/Right planes by position |
+| `is_part`, `is_assembly`, `is_drawing`, `path` | Document type and file path |
 | `rebuild(force=False)` | Rebuild changed features (`EditRebuild3`); `force=True` rebuilds all (`ForceRebuild3`) |
+| `sketch(on)` | `with model.sketch(plane_or_face) as s:` - a [`Sketch`](#class-sketch) |
+| `extrude(sketch, depth, reverse=False, both=False, merge=True, draft=0)` | Boss-extrude |
+| `cut(sketch, depth=None, reverse=False, both=False)` | Cut-extrude (`depth=None`: through all) |
+| `revolve(sketch, angle=None, cut=False, merge=True)` | Revolve around the sketch's centerline |
+| `fillet(edges, radius)` / `chamfer(edges, distance, angle=None)` | Edge features |
+| `shell(faces, thickness, outward=False)` | Shell |
+| `components(top_level=True)`, `component(name)`, `add_component(path, at, config)` | Assembly components |
+| `mate(a, b, kind, align, flip, distance, angle)`, `mates()`, `component_planes(component)` | Mates |
+| `bom(top_level=True)` | Bill of materials |
+| `create_drawing(template=None, views="standard")`, `add_view(...)`, `sheets()`, `views()` | Drawings |
+| `save(path=None)`, `export(path, all_sheets=True)` | Save / save a copy in another format |
 | `batch(rebuild=True)` | Context manager: freeze graphics and the feature tree, rebuild once at the end (if anything changed and `rebuild` is true). Nestable |
+
+### `class Sketch`
+Returned by `model.sketch(on)`; use it in a `with` block. Methods (sketch coordinates, m): `line`,
+`centerline`, `circle`, `arc`, `rect`, `corner_rect`, `polyline`, `point`. Attributes: `feature` (the
+sketch feature after the block), `segments`, `model`, `on`.
+
+### `class FeatureError(RuntimeError)`
+Raised by the building, assembly, drawing and export methods when SOLIDWORKS refuses an operation.
+Predefined in scripts.
+
+### Modules `swpy.build`, `swpy.assembly`, `swpy.drawing`
+The implementations behind the `Model` methods above, as functions taking the model first
+(`build.extrude(model, ...)`); constants `assembly.MATES` and `assembly.ALIGN` list the mate kinds and
+alignments.
 
 ### `class Dims`
 Returned by `model.dims`.

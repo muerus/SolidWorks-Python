@@ -2,6 +2,8 @@
 
 Everything that can be done in Python is done here, so the C# layer stays thin:
 sessions, stdout capture, REPL-style result of a trailing expression, tracebacks.
+
+Reload-safe: `importlib.reload` keeps the attached application and live sessions.
 """
 import ast
 import contextlib
@@ -10,10 +12,13 @@ import json
 import traceback
 
 from swpy._interop import sldworks, swconst
+from swpy.com import Com
 
-_sw = None          # ISldWorks
-_addin = None       # SwPy.SwPyAddIn
-_sessions = {}
+_sw = globals().get("_sw")              # Com(ISldWorks), set by attach()
+_addin = globals().get("_addin")        # SwPy.SwPyAddIn
+_sessions = globals().get("_sessions", {})
+if _sw is not None and not isinstance(_sw, Com):   # upgraded from an older host version
+    _sw = Com(_sw, prefer="ISldWorks")
 
 FILENAME = "<swpy>"
 
@@ -21,13 +26,12 @@ FILENAME = "<swpy>"
 def attach(raw_sw, addin):
     """Receive the live SOLIDWORKS application from the add-in."""
     global _sw, _addin
-    _sw = sldworks.ISldWorks(raw_sw)
+    _sw = Com(raw_sw, prefer="ISldWorks")
     _addin = addin
 
 
 def active_doc():
-    raw = _sw.ActiveDoc if _sw is not None else None
-    return sldworks.IModelDoc2(raw) if raw is not None else None
+    return _sw.ActiveDoc if _sw is not None else None   # auto-typed by the proxy
 
 
 def _new_globals(name):
@@ -53,7 +57,11 @@ def run(session, code):
     g = _sessions.get(session)
     if g is None:
         g = _sessions[session] = _new_globals(session)
-    g["doc"] = active_doc()
+    g["sw"] = _sw
+    try:
+        g["doc"] = active_doc()
+    except Exception:   # never let a doc lookup block running code (e.g. the reload that fixes it)
+        g["doc"] = None
 
     out = io.StringIO()
     res = {"ok": True, "stdout": "", "result": None, "error": None}
@@ -83,3 +91,17 @@ def _format_user_error(e):
 
 def reset(session):
     _sessions.pop(session, None)
+
+
+def reload_package():
+    """Dev: reload swpy from disk without restarting SOLIDWORKS (keeps sessions)."""
+    import importlib
+    import sys
+    import swpy
+    for name in sorted(m for m in sys.modules if m == "swpy" or m.startswith("swpy.")):
+        if name not in ("swpy._host", "swpy.swconst"):
+            importlib.reload(sys.modules[name])
+    importlib.reload(sys.modules["swpy._host"])
+    for g in _sessions.values():
+        g["sldworks"] = sys.modules["swpy._interop"].sldworks
+    return swpy.__version__

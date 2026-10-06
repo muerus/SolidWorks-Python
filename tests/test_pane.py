@@ -1,15 +1,28 @@
 """L4: task pane editor + REPL (driven through the add-in's Pane() automation hook)."""
+import os
+
 import pytest
+
+
+SCRATCH = os.path.join(os.environ["LOCALAPPDATA"], "SwPy", "scratch.py")
 
 
 @pytest.fixture
 def pane(swpy):
+    """Editor pane driver; restores the user's editor text and scratch file afterwards."""
     p = swpy.obj.Pane
     p("reset", "")
     p("clear", "")
-    saved = p("get_text", "")
+    saved_text = p("get_text", "")
+    saved_file = open(SCRATCH, encoding="utf-8").read() if os.path.exists(SCRATCH) else None
     yield p
-    p("set_text", saved)   # leave the user's scratch script as it was
+    p("set_text", saved_text)
+    if saved_file is None:
+        if os.path.exists(SCRATCH):
+            os.remove(SCRATCH)
+    else:
+        with open(SCRATCH, "w", encoding="utf-8") as f:
+            f.write(saved_file)
 
 
 def test_pane_visible(pane):

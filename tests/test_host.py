@@ -65,7 +65,7 @@ def test_system_exit_does_not_escape(swpy, session):
 
 
 def test_sw_is_full_typed_interface(swpy, session):
-    assert swpy.ok("type(sw).__name__", session)["result"] == "'ISldWorks'"
+    assert swpy.ok("sw.interfaces[0]", session)["result"] == "'ISldWorks'"
     assert int(swpy.ok("len(dir(sw))", session)["result"]) > 300   # not an embedded trimmed copy
 
 

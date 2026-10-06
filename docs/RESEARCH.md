@@ -96,6 +96,15 @@ older interop (API is backward compatible), not the reverse.
 | Thread of external COM calls | MTA RPC thread -> every SW call marshalled to UI STA: **~300 ms per API call**. |
 | Fix | `MainThread` dispatcher (hidden WinForms control, `Invoke`): **27-43 µs per API call, 3.2 ms external round trip**. |
 
+### 4.1 Auto-typing (L2, swpy.com)
+
+| Question | Result |
+|---|---|
+| COM self-description (`Information.TypeName` / IDispatch typeinfo) | **Unreliable** - only IBody2 reported a name; docs, features, faces report `_ComObject`. |
+| QueryInterface sweep over ~45 curated interfaces | Works; in C# (`ComInfo.Implemented`, one call) **~89 us/object** vs 943 us from Python. Typed views created lazily. |
+| Python list -> API `object` param | pythonnet passes an opaque PyObject -> "ComVisible(false) parent" error. Fix: `unwrap` builds typed .NET arrays; primitive arrays from the API come back as `NetList` remembering their element type (byte[] persist refs round-trip). |
+| Module reload during a SW session | Old-class proxies survive in globals; `Com` unwraps by type *name*, nested layers included. |
+
 ## 5. Sources
 - pythonnet docs/releases: https://pythonnet.github.io/pythonnet/ ,
   https://github.com/pythonnet/pythonnet/releases

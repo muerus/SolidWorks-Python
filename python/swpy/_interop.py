@@ -1,7 +1,7 @@
 """SOLIDWORKS interop bound to the real interop assemblies.
 
-`sldworks.IModelDoc2(obj)` casts through a generated C# method (SwPy.Scripting.Cast) whose
-declared return type is the real interface, so pythonnet wraps the object with that type.
+`sldworks.IPartDoc(obj)` returns a `Com` proxy that prefers that interface. Casting goes through a
+generated C# method (SwPy.Scripting.Cast) whose declared return type is the real interface.
 Never import from `SolidWorks.Interop.*` directly: other add-ins (e.g. McMaster-Carr) embed
 trimmed copies of those types and pythonnet may bind to them.
 """
@@ -9,15 +9,19 @@ import clr  # noqa: F401  (pythonnet)
 from SwPy.Scripting import Cast
 
 from swpy import swconst  # noqa: F401  (generated pure-Python constants)
+from swpy.com import Com
 
 
 class _Casts:
     def __getattr__(self, name):
-        fn = None if name.startswith("_") else getattr(Cast, name, None)
-        if fn is None:
+        if name.startswith("_") or not hasattr(Cast, name):
             raise AttributeError(f"SOLIDWORKS interop has no interface {name!r}")
-        setattr(self, name, fn)   # cache
-        return fn
+
+        def cast(obj):
+            return None if obj is None else Com(obj, prefer=name)
+        cast.__name__ = name
+        setattr(self, name, cast)   # cache
+        return cast
 
     def __dir__(self):
         return [n for n in dir(Cast) if not n.startswith("_") and n[0].isupper()]

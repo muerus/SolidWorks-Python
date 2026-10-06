@@ -9,14 +9,15 @@ SCRATCH = os.path.join(os.environ["LOCALAPPDATA"], "SwPy", "scratch.py")
 
 
 @pytest.fixture
-def pane(swpy):
-    """Editor pane driver; restores the user's editor text and scratch file afterwards."""
+def pane(swpy, tmp_path_factory):
+    """Editor pane driver; restores the user's editor text, scratch file, tabs and recent files afterwards."""
     p = swpy.obj.Pane
     p("reset", "")
     p("clear", "")
     saved_text = p("get_text", "")
     saved_file = open(SCRATCH, encoding="utf-8").read() if os.path.exists(SCRATCH) else None
     yield p
+    p("forget", str(tmp_path_factory.getbasetemp().parent))   # tabs/recent files of pytest temp files
     p("set_text", saved_text)
     if saved_file is None:
         if os.path.exists(SCRATCH):

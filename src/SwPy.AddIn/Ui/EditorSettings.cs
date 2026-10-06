@@ -14,6 +14,8 @@ namespace SwPy.Ui
         public string Theme { get; set; } = "light";
         public int Zoom { get; set; }
         public bool WordWrap { get; set; }
+        /// <summary>Folder of toolbar scripts (empty: Documents\SwPy\Scripts).</summary>
+        public string ScriptsFolder { get; set; } = "";
         public List<string> Recent { get; set; } = new List<string>();
         /// <summary>Open tabs: file paths, or untitled buffers' backup files under the scratch folder.</summary>
         public List<string> OpenTabs { get; set; } = new List<string>();

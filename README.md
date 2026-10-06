@@ -69,6 +69,11 @@ print(model.mass["mass"], "kg")
 - `@on(doc, "rebuild")`, `on(sw, "active_doc", fn)`: Python handlers for any SOLIDWORKS event, isolated
   from errors and removed automatically on Reset, document close and unload.
 
+**Tools for your team**
+- Every `.py` in `Documents\SwPy\Scripts` becomes a one-click tool (pane menu; SwPy toolbar and
+  CommandManager tab with a machine-wide install); `startup\` scripts run when SOLIDWORKS starts.
+- `ui.progress` (Esc cancels long loops), `ui.message`, `ui.ask`, `ui.prompt`, file and folder dialogs.
+
 **Packages and automation**
 - `# r: numpy, pandas` installs pip packages per user on first run.
 - `swpy.client`: drive SOLIDWORKS from Jupyter or any Python. Excel VBA and C# can call the same COM
@@ -132,6 +137,7 @@ The **[user guide](docs/guide/README.md)** covers everything:
 | [Recipes](docs/guide/08-recipes.md) | Parts from scratch, studies, exports, properties, assemblies |
 | [Troubleshooting](docs/guide/09-troubleshooting.md) | Logs and common errors |
 | [Events](docs/guide/10-events.md) | Handlers for rebuilds, saves, selections, document switches |
+| [Script buttons and UI](docs/guide/11-scripts-and-ui.md) | Script folder, buttons, startup scripts, progress (Esc cancels), dialogs |
 | [API reference](docs/guide/api-reference.md) | Every public class and function |
 
 Every runnable example in the guide is executed against SOLIDWORKS by the test suite.

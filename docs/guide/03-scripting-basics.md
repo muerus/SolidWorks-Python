@@ -16,6 +16,7 @@ These names are predefined - no imports needed:
 | `swconst` | All SOLIDWORKS API enums: `swconst.swDocumentTypes_e.swDocPART` |
 | `sldworks` | Typed casts: `sldworks.IPartDoc(obj)` (rarely needed, see [chapter 5](05-solidworks-api.md#casts)) |
 | `on`, `off` | Subscribe / unsubscribe event handlers (see [Events](10-events.md)) |
+| `ui` | Progress bar, messages, questions, prompts, file dialogs (see [chapter 11](11-scripts-and-ui.md)) |
 | `cosworks`, `swmotionstudy`, ... | The other SOLIDWORKS API libraries (see [chapter 5](05-solidworks-api.md#other-api-libraries)) |
 | `_` | The value of the last expression shown |
 
@@ -77,7 +78,8 @@ and safe, but it also means SOLIDWORKS waits while a script runs. For long jobs:
 
 * use `model.batch()` to switch off graphics and rebuild once ([details](04-model-api.md#batch-edits)),
 * print progress - output appears live,
-* there is no "stop" button: avoid infinite loops (save your work before experimenting).
+* wrap long loops in `ui.progress(...)`: Esc then stops them ([details](11-scripts-and-ui.md#progress-bar-esc-cancels)),
+* otherwise there is no "stop" button: avoid infinite loops (save your work before experimenting).
 
 ## Organising code
 

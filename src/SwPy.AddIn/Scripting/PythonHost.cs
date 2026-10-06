@@ -87,13 +87,15 @@ namespace SwPy.Scripting
         }
 
         /// <param name="stream">Forward stdout/stderr live to SwPyAddIn.Write while the code runs.</param>
-        public string Execute(string session, string code, bool stream = false)
+        /// <param name="filename">Run as this script file (tracebacks, __file__, imports from its folder).</param>
+        public string Execute(string session, string code, bool stream = false, string filename = null)
         {
             using (Py.GIL())
             using (var s = new PyString(session ?? "default"))
             using (var c = new PyString(code ?? ""))
             using (var st = stream ? PyObject.FromManagedObject(true) : PyObject.FromManagedObject(false))
-            using (var result = _host.InvokeMethod("run", s, c, st))
+            using (var fn = new PyString(filename ?? ""))
+            using (var result = _host.InvokeMethod("run", s, c, st, fn))
             {
                 return result.As<string>();
             }

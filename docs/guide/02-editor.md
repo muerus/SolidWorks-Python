@@ -147,6 +147,11 @@ use `\1` in the replacement for groups). *Replace All* is a single undo step.
 
 **Theme** switches between light and dark. The choice is remembered.
 
+## Scripts menu
+
+**Scripts ▾** lists the scripts of your script folder: click one to run it. See
+[Script buttons and user interaction](11-scripts-and-ui.md).
+
 ## The REPL line
 
 * Enter runs the line in the same session as the editor.

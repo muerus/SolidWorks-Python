@@ -8,6 +8,7 @@ All names below are SI-based. In editor scripts the most used ones are predefine
 * [`swpy.com`](#swpycom) - auto-typed proxies over SOLIDWORKS objects
 * [`swpy._interop`](#interop-sldworks-and-swconst) - `sldworks` casts and `swconst` enums
 * [`swpy.events`](#swpyevents) - event handlers
+* [`swpy.ui`](#swpyui) - progress bar, messages, dialogs
 * [`swpy.packages`](#swpypackages) - `# r:` requirements
 * [`swpy.client`](#swpyclient) - remote control from another Python
 
@@ -238,6 +239,24 @@ See [Events](10-events.md). `on` and `off` are predefined in scripts.
 ### `class Handler`
 Returned by `on`. Attributes: `source`, `event`, `api_event`, `fn`, `session`, `active`, `calls`,
 `errors`; `remove()` unsubscribes (idempotent).
+
+---
+
+## swpy.ui
+
+Predefined in scripts as `ui`. See [Script buttons and user interaction](11-scripts-and-ui.md).
+
+| Name | Description |
+|---|---|
+| `progress(items_or_total=None, title="SwPy", total=None)` | SOLIDWORKS progress bar. Iterate over items, or use as a context manager with `step(n=1, title=None)`; `position` holds the progress. Esc raises `Cancelled` at the next step |
+| `Cancelled` | Exception raised when the user pressed Esc |
+| `message(text, icon="info", buttons="ok")` | Message box; icon `info`/`warning`/`error`/`question`, buttons `ok`/`ok_cancel`/`yes_no`/`yes_no_cancel`/`retry_cancel`; returns `'ok'`, `'cancel'`, `'yes'`, `'no'`, `'retry'` ... |
+| `ask(text, cancel=False)` | Yes/No question -> `True`/`False` (`None` for Cancel with `cancel=True`) |
+| `prompt(text, default="", title="SwPy")` | One line of text input; `None` if cancelled |
+| `open_file(filter, title, folder)` / `open_files(...)` | File-open dialog -> path / list of paths |
+| `save_file(filter, title, name, folder)` | File-save dialog -> path or `None` |
+| `folder(title, start)` | Folder picker -> path or `None` |
+| `status(text)` | Text in the SOLIDWORKS status bar |
 
 ---
 

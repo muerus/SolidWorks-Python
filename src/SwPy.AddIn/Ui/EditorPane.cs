@@ -49,6 +49,7 @@ namespace SwPy.Ui
         private readonly Label _prompt;
         private readonly ToolStripStatusLabel _status, _caret, _python;
         private readonly ToolStripSplitButton _open;
+        private readonly ToolStripDropDownButton _scriptsMenu;
         private readonly ToolStrip _tools;
         private readonly StatusStrip _statusBar;
         private readonly List<string> _history = new List<string>();
@@ -59,7 +60,10 @@ namespace SwPy.Ui
         private bool _restoring;
 
         /// <summary>Runs code in a session (session, code, stream output live); set by the add-in.</summary>
-        internal Func<string, string, bool, ExecResult> Runner { get; set; }
+        internal Func<string, string, bool, string, ExecResult> Runner { get; set; }
+
+        /// <summary>Rebuild the SwPy toolbar after scripts changed; set by the add-in.</summary>
+        internal Action RefreshScriptCommands { get; set; }
 
         /// <summary>Clears a session; set by the add-in.</summary>
         internal Action<string> Resetter { get; set; }
@@ -95,6 +99,10 @@ namespace SwPy.Ui
             tools.Items.Add(_open);
             tools.Items.Add(Button("Save", "Save (Ctrl+S), Save As (Ctrl+Shift+S)", (s, e) => SaveFile(Active, false)));
             tools.Items.Add(Button("Find", "Find (Ctrl+F), Replace (Ctrl+H), Go to line (Ctrl+G)", (s, e) => _findBar.Open(false)));
+            _scriptsMenu = new ToolStripDropDownButton("Scripts") { ToolTipText = "Run a script from the script folder" };
+            _scriptsMenu.DropDownOpening += (s, e) => FillScripts();
+            _scriptsMenu.DropDownItems.Add("(none)");
+            tools.Items.Add(_scriptsMenu);
             tools.Items.Add(new ToolStripSeparator());
             tools.Items.Add(Button("Clear", "Clear output", (s, e) => _output.Clear()));
             tools.Items.Add(Button("Reset", "Forget all variables of this session", (s, e) => ResetSession()));
@@ -470,7 +478,54 @@ namespace SwPy.Ui
             Execute(code);
         }
 
-        private ExecResult Execute(string code)
+        /// <summary>Run a script file (toolbar button, Scripts menu, startup). On error the file opens in a
+        /// tab with the failing line marked.</summary>
+        internal ExecResult RunFile(string path)
+        {
+            string code;
+            try
+            {
+                code = File.ReadAllText(path);
+            }
+            catch (Exception ex)
+            {
+                Append($"Cannot read {path}: {ex.Message}\n", _theme.Error);
+                return null;
+            }
+            Append($"# run {Path.GetFileName(path)}\n", _theme.Echo);
+            var r = Execute(code, path);
+            if (r != null && !r.Ok && r.Error != null)
+            {
+                var pattern = new Regex("File \"" + Regex.Escape(path) + "\", line (\\d+)", RegexOptions.IgnoreCase);
+                var matches = pattern.Matches(r.Error);
+                if (matches.Count > 0)
+                {
+                    OpenPath(path);
+                    ActiveEditor?.ShowRuntimeError(int.Parse(matches[matches.Count - 1].Groups[1].Value),
+                        r.Error.TrimEnd().Split('\n').Last().Trim());
+                }
+            }
+            return r;
+        }
+
+        private void FillScripts()
+        {
+            _scriptsMenu.DropDownItems.Clear();
+            var scripts = ScriptLibrary.Scripts();
+            if (scripts.Count == 0) _scriptsMenu.DropDownItems.Add(new ToolStripMenuItem("(no scripts yet)") { Enabled = false });
+            foreach (var path in scripts)
+                _scriptsMenu.DropDownItems.Add(new ToolStripMenuItem(ScriptLibrary.Title(path), null, (s, e) => RunFile(path))
+                    { ToolTipText = ScriptLibrary.Describe(path) });
+            _scriptsMenu.DropDownItems.Add(new ToolStripSeparator());
+            _scriptsMenu.DropDownItems.Add(new ToolStripMenuItem("Open script folder", null, (s, e) =>
+            {
+                ScriptLibrary.EnsureFolder();
+                Process.Start("explorer.exe", "\"" + ScriptLibrary.Folder + "\"");
+            }));
+            _scriptsMenu.DropDownItems.Add(new ToolStripMenuItem("Refresh SwPy toolbar", null, (s, e) => RefreshScriptCommands?.Invoke()));
+        }
+
+        private ExecResult Execute(string code, string filename = null)
         {
             if (Runner == null)
             {
@@ -482,7 +537,7 @@ namespace SwPy.Ui
             ExecResult r;
             try
             {
-                r = Runner(Session, code.Replace("\r\n", "\n"), true);
+                r = Runner(Session, code.Replace("\r\n", "\n"), true, filename);
             }
             finally
             {
@@ -758,6 +813,18 @@ namespace SwPy.Ui
                 case "goto": ed.GotoLine(int.Parse(arg)); return ed.CaretLine.ToString();
                 case "caret": return $"{ed.CaretLine},{ed.CaretColumn}";
                 case "theme": if (!string.IsNullOrEmpty(arg)) SetTheme(arg); return _theme.Name;
+                case "run_file": RunFile(arg); return _output.Text;
+                case "forget":   // tests: close tabs and drop recent files under a folder, so the user's state stays clean
+                {
+                    foreach (var d in _docs.Where(d => d.Path != null && d.Path.StartsWith(arg, StringComparison.OrdinalIgnoreCase)).ToList())
+                        CloseTab(d, true);
+                    var removed = _settings.Recent.RemoveAll(p => p.StartsWith(arg, StringComparison.OrdinalIgnoreCase));
+                    SaveSettings();
+                    return removed.ToString();
+                }
+                case "scripts_menu":
+                    FillScripts();
+                    return string.Join("|", _scriptsMenu.DropDownItems.Cast<ToolStripItem>().Select(i => i.Text));
                 default: throw new ArgumentException("Unknown pane command: " + command);
             }
         }

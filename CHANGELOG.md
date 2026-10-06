@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **Script buttons**: every `.py` in the script folder (default `Documents\SwPy\Scripts`) is a tool in
+  the pane's Scripts menu and on a SwPy toolbar / menu / CommandManager tab (shown by SOLIDWORKS for
+  machine-wide installs); `startup\` scripts run when SOLIDWORKS is first idle; failing scripts open with
+  the error line marked.
+- **`swpy.ui`** (`ui` in scripts): progress bar with Esc to cancel, message boxes, yes/no questions, text
+  prompt, file/folder dialogs, status bar text.
 - **Events** (`swpy.events`, `on`/`off` in scripts): Python handlers for any SOLIDWORKS event with
   friendly aliases, flexible handler signatures, error isolation, automatic removal on Reset, document
   close and add-in unload.

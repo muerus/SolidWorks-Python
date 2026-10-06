@@ -41,7 +41,7 @@ def active_doc():
 
 
 def _new_globals(name):
-    from swpy import events as _events, model as _model, units as _units
+    from swpy import events as _events, model as _model, ui as _ui, units as _units
     g = {
         "__name__": "__main__",
         "__swpy_session__": name,
@@ -50,7 +50,7 @@ def _new_globals(name):
         "swconst": swconst,
         **libraries,                       # cosworks, swmotionstudy, swdimxpert, EdmLib ... (lazy)
         "Model": _model.Model, "Vec": _model.Vec, "X": _model.X, "Y": _model.Y, "Z": _model.Z,
-        "on": _events.on, "off": _events.off,
+        "on": _events.on, "off": _events.off, "ui": _ui,
     }
     g.update({k: getattr(_units, k) for k in ("mm", "cm", "m", "inch", "ft", "deg", "rad", "kg", "g", "to")})
     return g
@@ -133,14 +133,26 @@ def call(method, args_json):
         return json.dumps({"ok": False, "error": f"{type(e).__name__}: {e}"})
 
 
-def run(session, code, stream=False):
+def run(session, code, stream=False, filename=None):
     """Execute code in a persistent session. Returns a JSON string.
 
     stream: forward stdout/stderr live to the add-in (editor pane) while running.
+    filename: run as that script file: tracebacks name it, `__file__` is set and its folder is
+    importable during the run (script buttons, startup scripts).
     """
     global _current
+    import os
+    import sys
     g = _session(session)
     previous, _current = _current, session
+    name = filename or FILENAME
+    added_path = None
+    if filename:
+        g["__file__"] = filename
+        folder = os.path.dirname(filename)
+        if folder and folder not in sys.path:
+            sys.path.insert(0, folder)
+            added_path = folder
     out = io.StringIO()
     live = bool(stream) and _addin is not None
     tee_out, tee_err = _Tee(out, False, live), _Tee(out, True, live)
@@ -150,10 +162,10 @@ def run(session, code, stream=False):
             reqs = packages.requirements(code)
             if reqs:
                 packages.ensure(reqs, log=tee_out.write)
-            tree, last = _split_trailing_expression(ast.parse(code, FILENAME, "exec"))
-            exec(compile(tree, FILENAME, "exec"), g)
+            tree, last = _split_trailing_expression(ast.parse(code, name, "exec"))
+            exec(compile(tree, name, "exec"), g)
             if last is not None:
-                value = eval(compile(last, FILENAME, "eval"), g)
+                value = eval(compile(last, name, "eval"), g)
                 if value is not None:
                     g["_"] = value
                     res["result"] = repr(value)
@@ -166,6 +178,8 @@ def run(session, code, stream=False):
         tee_out.flush()
         tee_err.flush()
         _current = previous
+        if added_path in sys.path:
+            sys.path.remove(added_path)
     res["stdout"] = out.getvalue()
     return json.dumps(res)
 

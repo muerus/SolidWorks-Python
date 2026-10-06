@@ -37,6 +37,7 @@ changes are used directly), loads the add-in and runs everything against it:
 | `test_host.py` | Sessions, output, errors, results |
 | `test_com.py` | Auto-typed proxies, arrays, casts |
 | `test_model.py` | Units, dims, globals, batch, queries, planes |
+| `test_ui.py` | Script buttons (via the IDispatch callbacks), startup scripts, `swpy.ui` incl. real dialogs |
 | `test_events.py` | Event handlers: aliases, arguments, error isolation, lifetime |
 | `test_libraries.py` | Other API libraries: typing, casts, constants, detection safety |
 | `test_editor.py` | Editor services: completion, signatures, hover, syntax check |

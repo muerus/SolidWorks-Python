@@ -72,8 +72,15 @@ fail in confusing ways. Use `sldworks.IFoo(obj)` for casts and `swconst` for enu
 ## Long scripts freeze SOLIDWORKS
 
 Scripts run on the SOLIDWORKS UI thread, so SOLIDWORKS waits until they finish. Use `model.batch()`
-around many edits, print progress, and test loops on a few items first. There is no way to stop a
-running script other than closing SOLIDWORKS - save your work before experimenting.
+around many edits and wrap long loops in `ui.progress(...)` - then **Esc** stops them. A loop without
+`ui.progress` cannot be interrupted other than by closing SOLIDWORKS - save your work before
+experimenting.
+
+## The SwPy toolbar / CommandManager tab does not appear
+
+SOLIDWORKS only shows toolbars, menus and CommandManager tabs of add-ins registered machine-wide.
+Install with `tools\install.ps1 -Machine` (needs admin once), or use **Scripts ▾** in the SwPy pane, which
+always works.
 
 ## Reporting a problem
 

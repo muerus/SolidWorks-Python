@@ -1,0 +1,14 @@
+# Normalise line endings in the repository (LF), check out natively.
+* text=auto
+
+*.cs     text diff=csharp
+*.csproj text
+*.py     text diff=python
+*.md     text
+*.ps1    text eol=crlf
+
+*.png    binary
+*.ico    binary
+*.dll    binary
+*.exe    binary
+*.whl    binary

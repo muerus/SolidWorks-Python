@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,py}]
+indent_size = 4
+max_line_length = 120
+
+[*.{md,yml,json,csproj}]
+indent_size = 2
+
+[*.ps1]
+end_of_line = crlf
+indent_size = 4

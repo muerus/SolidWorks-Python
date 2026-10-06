@@ -91,7 +91,7 @@ older interop (API is backward compatible), not the reverse.
 | `ISldWorks.LoadAddIn(<dll path>)` with per-user COM | **Works** (rc 0) -> dev/test path. Auto-load at startup still needs a one-time HKLM key (admin) or a loader - open item for packaging. |
 | pythonnet 3.2.0 + Python 3.12 in SW's net48 CLR | **Works.** First call 1.5 s (engine start), then ms. |
 | `from SolidWorks.Interop.sldworks import ISldWorks` | **Unsafe.** Binds to McMaster-Carr add-in's embedded (NoPIA) copy with 13 members. Any machine with such add-ins breaks. |
-| `PyType.Get(Type)` to hand Python the real type | **Crashes** (AccessViolation in `PyType_GenericAlloc`) whenever the class is not created yet - pythonnet 3.2.0 bug, reproduced standalone (`spikes/pytype`). |
+| `PyType.Get(Type)` to hand Python the real type | **Crashes** (AccessViolation in `PyType_GenericAlloc`) whenever the class is not created yet - pythonnet 3.2.0 bug, reproduced standalone with a minimal probe during research. |
 | Fix | Generated `SwPy.Scripting.Cast` (932 typed casts): declared return type => pythonnet wraps with the real interface. `swconst` generated as pure Python (889 enums, 0.18 s import). |
 | Thread of external COM calls | MTA RPC thread -> every SW call marshalled to UI STA: **~300 ms per API call**. |
 | Fix | `MainThread` dispatcher (hidden WinForms control, `Invoke`): **27-43 µs per API call, 3.2 ms external round trip**. |

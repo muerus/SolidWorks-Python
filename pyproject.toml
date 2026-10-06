@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swpy"
+dynamic = ["version"]
+description = "Python for SOLIDWORKS: embedded CPython add-in, Pythonic model API and remote client"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "muerus" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering",
+    "Private :: Do Not Upload",
+]
+# In-process modules (com, model, _host ...) run inside SOLIDWORKS via pythonnet and are loaded by the
+# add-in. Installing this package is only needed to use swpy.client from another Python process.
+dependencies = []
+
+[project.optional-dependencies]
+client = ["pywin32; sys_platform == 'win32'"]
+dev = ["pythonnet>=3.0", "pywin32; sys_platform == 'win32'", "pytest", "pyflakes", "pillow"]
+
+[project.urls]
+Documentation = "https://github.com/muerus/SolidWorks-Python/tree/main/docs/guide"
+Source = "https://github.com/muerus/SolidWorks-Python"
+
+[tool.setuptools]
+package-dir = { "" = "python" }
+packages = ["swpy"]
+
+[tool.setuptools.dynamic]
+version = { attr = "swpy.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

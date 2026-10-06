@@ -4,4 +4,9 @@ obj/
 __pycache__/
 *.pyc
 runtime/
-ai-context/last_test_run.log
+ai-context/
+.pytest_cache/
+.claude/
+*.egg-info/
+build/
+dist/

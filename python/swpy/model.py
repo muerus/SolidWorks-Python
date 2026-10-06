@@ -150,6 +150,24 @@ class Edges(Query):
 
 
 # ---------------------------------------------------------------- dimensions / globals
+class Planes(tuple):
+    """The three default reference planes. SOLIDWORKS keeps them first in the tree and they
+    cannot be deleted or reordered, so position is stable while names are template-defined."""
+
+    def __new__(cls, ref_planes):
+        planes = tuple(ref_planes)[:3]
+        if len(planes) < 3:
+            raise LookupError(f"expected 3 default planes, found {len(planes)}")
+        return super().__new__(cls, planes)
+
+    front = property(lambda self: self[0])
+    top = property(lambda self: self[1])
+    right = property(lambda self: self[2])
+
+    def __repr__(self):
+        return "<Planes " + ", ".join(p.Name for p in self) + ">"
+
+
 class Dims:
     """model.dims["D1@Boss-Extrude1"] -> SI float; assignment updates and rebuilds."""
 
@@ -313,6 +331,12 @@ class Model:
 
     def feature(self, name):
         return self.doc.FeatureByName(name)
+
+    @property
+    def planes(self):
+        """Default Front/Top/Right planes (also `[0]`, `[1]`, `[2]`), found by position so
+        templates that rename them (e.g. "XY PLANE") still work."""
+        return Planes(f for f in self.features() if f.GetTypeName2() == "RefPlane")
 
     # -- rebuild control ------------------------------------------------------
     def rebuild(self, force=False):

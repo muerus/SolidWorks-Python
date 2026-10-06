@@ -4,13 +4,14 @@ import pytest
 from test_host import PART
 
 BOSS = """
-planes[1].Select2(False, 0)
+planes.top.Select2(False, 0)
 part.SketchManager.InsertSketch(True)
 part.SketchManager.CreateCircleByRadius(0, 0, 0, 0.01)
 part.SketchManager.InsertSketch(True)
 part.FeatureByPositionReverse(0).Select2(False, 0)  # closing the sketch can leave nothing selected
-part.FeatureManager.FeatureExtrusion2(True, False, False, 0, 0, 0.04, 0, False, False, False, False,
-                                      0, 0, False, False, False, False, True, True, True, 0, 0, False)
+boss = part.FeatureManager.FeatureExtrusion2(True, False, False, 0, 0, 0.04, 0, False, False, False, False,
+                                             0, 0, False, False, False, False, True, True, True, 0, 0, False)
+assert boss is not None, "boss extrusion failed"
 model = Model(part)
 """
 
@@ -81,6 +82,11 @@ model.rebuild = orig
 """, s)
     assert r(swpy, s, "len(calls), round(model.dims['D1@Boss-Extrude1'], 9)") == "(1, 0.024)"
     swpy.ok("model.globals['Thick'] = 20 * mm", s)
+
+
+def test_planes(swpy, s):
+    assert r(swpy, s, "len(model.planes), model.planes.front.Name == model.planes[0].Name") == "(3, True)"
+    assert r(swpy, s, "model.planes.top.GetTypeName2(), model.planes.right.GetTypeName2()") == "('RefPlane', 'RefPlane')"
 
 
 def test_faces_planar_and_cylindrical(swpy, s):

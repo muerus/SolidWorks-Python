@@ -3,7 +3,7 @@
 Embedded CPython inside SOLIDWORKS: run Python in-process against the live API, from a
 script editor (planned) or from external clients over COM.
 
-Status: add-in host, embedded Python, task-pane editor + REPL, auto-typed API, Pythonic model layer (51 live tests).
+Status: add-in host, embedded Python, task-pane editor + REPL, auto-typed API, Pythonic model layer (74 live tests).
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/RESEARCH.md](docs/RESEARCH.md).
 
 ## Dev setup (Windows, no admin needed)
@@ -43,5 +43,6 @@ model.faces.planar().normal(Z).largest().Select4(False, None)
 model.faces.radius(10*mm)               # cylindrical faces of radius 10 mm
 model.edges.parallel(Z).select()        # selects in the viewport
 model.mass["volume"]
+model.planes.top.Select2(False, 0)      # default planes by position (renamed in custom templates)
 doc.FirstFeature().Name                 # raw API, auto-typed
 ```

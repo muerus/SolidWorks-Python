@@ -4,6 +4,8 @@
 ![SOLIDWORKS](https://img.shields.io/badge/SOLIDWORKS-2020%2B-red)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Release](https://img.shields.io/github/v/release/muerus/SolidWorks-Python)](https://github.com/muerus/SolidWorks-Python/releases/latest)
+[![Docs](https://img.shields.io/badge/docs-user%20guide-blue)](https://muerus.github.io/SolidWorks-Python/)
 
 SwPy embeds real CPython **inside SOLIDWORKS**. Write and run Python against the live SOLIDWORKS API
 from a task-pane IDE, use a Pythonic layer for everyday jobs, install any pip package, and drive
@@ -94,11 +96,12 @@ print(model.mass["mass"], "kg")
 
 ## Installation
 
-1. Get a build of SwPy: a release folder, or [build from source](#development).
-2. Register it for your Windows user and create the **SOLIDWORKS + SwPy** shortcut:
+1. Download **SwPy-x.y.z.zip** from the [latest release](https://github.com/muerus/SolidWorks-Python/releases/latest)
+   and unzip it to a permanent folder (e.g. `%LOCALAPPDATA%\Programs\SwPy`), or [build from source](#development).
+2. In that folder, register SwPy for your Windows user and create the **SOLIDWORKS + SwPy** shortcut:
 
    ```powershell
-   powershell -ExecutionPolicy Bypass -File tools\install.ps1 -BinDir <path-to-build>\net48
+   powershell -ExecutionPolicy Bypass -File tools\install.ps1
    ```
 
 3. Start SOLIDWORKS with the **SOLIDWORKS + SwPy** shortcut and open the **SwPy - Python** tab of the
@@ -127,7 +130,7 @@ sw.eval("model.mass['mass']")        # -> 0.12
 
 ## Documentation
 
-The **[user guide](docs/guide/README.md)** covers everything:
+The **[user guide](docs/guide/README.md)** (also as a website: **https://muerus.github.io/SolidWorks-Python/**) covers everything:
 
 | | |
 |---|---|
@@ -193,6 +196,7 @@ powershell tools\register.ps1                    # per-user COM registration of 
 .venv\Scripts\python -m pytest tests -q          # starts SOLIDWORKS, loads the add-in, runs the suite
 ```
 
+Release package: `powershell tools\package.ps1` builds `dist\SwPy-<version>.zip`.
 See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the test layout, the dev loop (reloading Python without
 restarting SOLIDWORKS), conventions and release builds. Logs: `%LOCALAPPDATA%\SwPy\logs\swpy.log`.
 

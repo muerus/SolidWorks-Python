@@ -7,7 +7,8 @@
 
 ## Install
 
-From a SwPy release folder (or a build of this repository):
+Download **SwPy-x.y.z.zip** from the [latest release](https://github.com/muerus/SolidWorks-Python/releases/latest),
+unzip it to a permanent folder (for example `%LOCALAPPDATA%\Programs\SwPy`) and run, in that folder:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\install.ps1

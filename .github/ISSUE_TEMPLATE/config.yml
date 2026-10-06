@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/muerus/SolidWorks-Python/discussions
+    about: Ask how to do something, share scripts, discuss ideas.
+  - name: Security vulnerability
+    url: https://github.com/muerus/SolidWorks-Python/security/advisories/new
+    about: Report security problems privately, not as an issue.

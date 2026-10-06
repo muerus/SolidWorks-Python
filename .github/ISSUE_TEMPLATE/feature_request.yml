@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement or a new helper
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do?
+      description: The task you are automating and what makes it hard today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could SwPy help?
+      description: A sketch of the API or behaviour you have in mind, e.g. `model.pattern(feature, count=4, spacing=20 * mm)`.
+      render: python
+  - type: textarea
+    id: raw
+    attributes:
+      label: Raw API calls (if you know them)
+      description: The SOLIDWORKS API methods involved, from a recorded macro or the API help.

@@ -1,0 +1,14 @@
+title: SwPy - Python for SOLIDWORKS
+description: Real Python inside SOLIDWORKS - task-pane IDE, Pythonic API, every SOLIDWORKS API library.
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-relative-links
+  - jekyll-readme-index
+relative_links:
+  enabled: true
+  collections: false
+markdown: kramdown
+kramdown:
+  input: GFM
+exclude:
+  - RESEARCH.md

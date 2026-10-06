@@ -1,0 +1,48 @@
+name: Bug report
+description: Something does not work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check [Troubleshooting](https://github.com/muerus/SolidWorks-Python/blob/main/docs/guide/09-troubleshooting.md) first.
+        **Security problems:** do not open an issue - use [private reporting](https://github.com/muerus/SolidWorks-Python/security/advisories/new).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: script
+    attributes:
+      label: Script to reproduce
+      description: The smallest script that shows the problem (remove anything confidential).
+      render: python
+  - type: textarea
+    id: output
+    attributes:
+      label: Output / traceback
+      description: From the SwPy output panel.
+      render: text
+  - type: input
+    id: swpy
+    attributes:
+      label: SwPy version
+      placeholder: "0.2.0 (swpy.__version__)"
+    validations:
+      required: true
+  - type: input
+    id: solidworks
+    attributes:
+      label: SOLIDWORKS version
+      placeholder: "2020 SP1 (sw.RevisionNumber() -> 28.1.0)"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log excerpt
+      description: The last lines of %LOCALAPPDATA%\SwPy\logs\swpy.log, if relevant.
+      render: text

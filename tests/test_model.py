@@ -4,10 +4,11 @@ import pytest
 from test_host import PART
 
 BOSS = """
-part.Extension.SelectByID2("Top Plane", "PLANE", 0, 0, 0, False, 0, None, 0)
+planes[1].Select2(False, 0)
 part.SketchManager.InsertSketch(True)
 part.SketchManager.CreateCircleByRadius(0, 0, 0, 0.01)
 part.SketchManager.InsertSketch(True)
+part.FeatureByPositionReverse(0).Select2(False, 0)  # closing the sketch can leave nothing selected
 part.FeatureManager.FeatureExtrusion2(True, False, False, 0, 0, 0.04, 0, False, False, False, False,
                                       0, 0, False, False, False, False, True, True, True, 0, 0, False)
 model = Model(part)

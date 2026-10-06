@@ -4,3 +4,4 @@ obj/
 __pycache__/
 *.pyc
 runtime/
+ai-context/last_test_run.log

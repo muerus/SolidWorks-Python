@@ -95,7 +95,9 @@ def test_call_overhead_is_small(swpy, session):
 PART = """
 tpl = sw.GetUserPreferenceStringValue(swconst.swUserPreferenceStringValue_e.swDefaultTemplatePart)
 part = sldworks.IModelDoc2(sw.NewDocument(tpl, 0, 0, 0))
-part.Extension.SelectByID2("Front Plane", "PLANE", 0, 0, 0, False, 0, None, 0)
+# Front/Top/Right by position: custom templates rename them (e.g. "XY PLANE")
+planes = [f for f in part.FeatureManager.GetFeatures(True) if f.GetTypeName2() == "RefPlane"][:3]
+planes[0].Select2(False, 0)
 part.SketchManager.InsertSketch(True)
 part.SketchManager.CreateCenterRectangle(0, 0, 0, 0.05, 0.03, 0)
 part.SketchManager.InsertSketch(True)

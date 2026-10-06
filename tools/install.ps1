@@ -7,11 +7,16 @@
   Remove registration and shortcuts.
 #>
 param(
-    [string]$BinDir = (Join-Path $PSScriptRoot '..\src\SwPy.AddIn\bin\Debug\net48'),
+    [string]$BinDir = '',
     [switch]$Machine,
     [switch]$Uninstall
 )
 $ErrorActionPreference = 'Stop'
+if (-not $BinDir) {
+    # release zip: <root>\bin next to <root>\tools; source checkout: the Debug build output
+    $release = Join-Path $PSScriptRoot '..\bin'
+    $BinDir = if (Test-Path (Join-Path $release 'SwPy.AddIn.dll')) { $release } else { Join-Path $PSScriptRoot '..\src\SwPy.AddIn\bin\Debug\net48' }
+}
 $Clsid = '{10C1BD59-4D33-4878-BDDA-DE5D879D6213}'
 $shell = New-Object -ComObject WScript.Shell
 $links = @(

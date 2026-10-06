@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-06 - first public release
+
 ### Security
 - `# r:` headers only accept PyPI package names and version specifiers (pip options, URLs and paths
   are rejected).
@@ -46,6 +48,8 @@ All notable changes to this project are documented here. The format follows
   remote control, recipes, troubleshooting and a full API reference. Every runnable example is executed
   by the test suite (`tests/test_docs.py`).
 - `pyproject.toml`, MIT license, contributing guide, `.editorconfig`, `.gitattributes`.
+- Release package (`tools/package.ps1`): the SOLIDWORKS interop assemblies are no longer shipped; the
+  add-in loads them from the user's SOLIDWORKS installation, whatever its version.
 
 ### Fixed
 - Test fixtures no longer depend on stock plane names or on the selection state after closing a sketch.
@@ -54,7 +58,7 @@ All notable changes to this project are documented here. The format follows
 ### Removed
 - Research spikes, the exit-crash bisection script and `tools/load.py` (superseded by `SwPy.Launcher`).
 
-## [0.1.0] - 2026-10-06
+## [0.1.0] - 2026-10-06 (internal milestone)
 
 ### Added
 - SOLIDWORKS add-in hosting embedded CPython via pythonnet, per-user COM registration without admin rights.

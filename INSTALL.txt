@@ -1,0 +1,28 @@
+SwPy - Python for SOLIDWORKS
+============================
+
+Requirements: Windows 10/11 x64, SOLIDWORKS 2020 or newer. No admin rights, no Python install needed.
+
+Install
+-------
+1. Unzip this folder to a permanent place, e.g. %LOCALAPPDATA%\Programs\SwPy
+   (do not run it from inside the zip or from Downloads you clean up later).
+2. Open PowerShell in that folder and run:
+
+       powershell -ExecutionPolicy Bypass -File tools\install.ps1
+
+   This registers SwPy for your Windows user and creates a "SOLIDWORKS + SwPy" shortcut on the
+   desktop and in the Start menu.
+3. Start SOLIDWORKS with the "SOLIDWORKS + SwPy" shortcut and open the "SwPy - Python" tab of the task
+   pane (right side of the SOLIDWORKS window).
+
+Optional (admin, once): tools\install.ps1 -Machine also registers SwPy machine-wide, so SOLIDWORKS loads it
+at every start and shows the SwPy toolbar and CommandManager tab.
+
+Uninstall: powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Uninstall
+
+If Windows blocks the script ("not digitally signed"): right-click the zip > Properties > Unblock before
+unzipping, or use the -ExecutionPolicy Bypass command above.
+
+Documentation: docs\guide\README.md, or https://github.com/muerus/SolidWorks-Python
+Security notes: SECURITY.md - scripts run with your Windows permissions; only run code you trust.

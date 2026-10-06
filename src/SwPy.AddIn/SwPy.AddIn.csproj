@@ -7,7 +7,7 @@
     <Nullable>disable</Nullable>
     <AssemblyName>SwPy.AddIn</AssemblyName>
     <RootNamespace>SwPy</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <!-- Oldest supported SOLIDWORKS interop; newer SW versions accept it. -->
@@ -26,79 +26,98 @@
     <Reference Include="SolidWorks.Interop.sldworks">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.sldworks.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swconst">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swconst.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swpublished">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swpublished.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <!-- Other API libraries (tools/gen_interop.py LIBRARIES); typed casts in Scripting/Libraries.g.cs -->
     <Reference Include="SolidWorks.Interop.cosworks">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.cosworks.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swmotionstudy">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swmotionstudy.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swdimxpert">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swdimxpert.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.SWRoutingLib">
       <HintPath>$(SwInstallDir)\SolidWorks.Interop.SWRoutingLib.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.sldcostingapi">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.sldcostingapi.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.dsgnchk">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.dsgnchk.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.fworks">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.fworks.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.gtswutilities">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.gtswutilities.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.sldtoolboxconfigureaddin">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.sldtoolboxconfigureaddin.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.sustainability">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.sustainability.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.sw3dprinter">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.sw3dprinter.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swbrowser">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swbrowser.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swcommands">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swcommands.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="SolidWorks.Interop.swdocumentmgr">
       <HintPath>$(SwInstallDir)\api\redist\SolidWorks.Interop.swdocumentmgr.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Interop.SWEdmLib">
       <HintPath>$(SwInstallDir)\Interop.SWEdmLib.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
     <Reference Include="PDMWorks.Interop.pdmworks">
       <HintPath>$(SwInstallDir)\api\redist\PDMWorks.Interop.pdmworks.dll</HintPath>
       <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 

@@ -7,7 +7,8 @@ baseurl: /SolidWorks-Python
 lang: en
 author: muerus
 logo: /images/social-preview.png
-image: /images/social-preview.png
+twitter:
+  card: summary_large_image
 github:
   repository_url: https://github.com/muerus/SolidWorks-Python
 theme: jekyll-theme-cayman
@@ -31,6 +32,9 @@ exclude:
 
 # Search snippets per page (kept here so the markdown files on GitHub stay clean)
 defaults:
+  - scope: {path: ""}
+    values:
+      image: /images/social-preview.png     # link previews (OpenGraph / Twitter large card)
   - scope: {path: "index.md"}
     values:
       title: "SwPy - Python for SOLIDWORKS: scripting, API and automation"

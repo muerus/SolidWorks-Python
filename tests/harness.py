@@ -88,3 +88,50 @@ class SwPy:
         if not r["ok"]:
             raise RuntimeError(r["error"])
         return r
+
+
+def sw_window():
+    """Top-level SOLIDWORKS main window handle (largest visible window of SLDWORKS.exe)."""
+    import win32gui
+    import win32process
+
+    pids = {int(line.split(",")[1].strip('"')) for line in subprocess.run(
+        ["tasklist", "/FO", "CSV", "/NH", "/FI", "IMAGENAME eq SLDWORKS.exe"],
+        capture_output=True, text=True).stdout.splitlines() if "SLDWORKS" in line}
+    found = []
+
+    def visit(hwnd, _):
+        if win32gui.IsWindowVisible(hwnd) and win32process.GetWindowThreadProcessId(hwnd)[1] in pids:
+            l, t, r, b = win32gui.GetWindowRect(hwnd)
+            found.append(((r - l) * (b - t), hwnd))
+    win32gui.EnumWindows(visit, None)
+    if not found:
+        raise RuntimeError("No visible SOLIDWORKS window")
+    return max(found)[1]
+
+
+def screenshot(path, sw=None):
+    """Capture the SOLIDWORKS main window (even if covered) to a PNG via PrintWindow."""
+    import ctypes
+    import win32gui
+    import win32ui
+    from PIL import Image
+
+    hwnd = sw_window()
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    w, h = right - left, bottom - top
+    hdc = win32gui.GetWindowDC(hwnd)
+    src = win32ui.CreateDCFromHandle(hdc)
+    mem = src.CreateCompatibleDC()
+    bmp = win32ui.CreateBitmap()
+    bmp.CreateCompatibleBitmap(src, w, h)
+    mem.SelectObject(bmp)
+    ctypes.windll.user32.PrintWindow(hwnd, mem.GetSafeHdc(), 2)   # PW_RENDERFULLCONTENT
+    info = bmp.GetInfo()
+    img = Image.frombuffer("RGB", (info["bmWidth"], info["bmHeight"]), bmp.GetBitmapBits(True), "raw", "BGRX", 0, 1)
+    win32gui.DeleteObject(bmp.GetHandle())
+    mem.DeleteDC()
+    src.DeleteDC()
+    win32gui.ReleaseDC(hwnd, hdc)
+    img.save(path)
+    return path

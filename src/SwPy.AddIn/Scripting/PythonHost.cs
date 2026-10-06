@@ -67,5 +67,14 @@ namespace SwPy.Scripting
                 return result.As<string>();
             }
         }
+
+        public void Reset(string session)
+        {
+            using (Py.GIL())
+            using (var s = new PyString(session ?? "default"))
+            {
+                _host.InvokeMethod("reset", s).Dispose();
+            }
+        }
     }
 }

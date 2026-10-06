@@ -3,7 +3,7 @@
 Embedded CPython inside SOLIDWORKS: run Python in-process against the live API, from a
 script editor (planned) or from external clients over COM.
 
-Status: **milestone 0/1** - add-in host, embedded Python runtime, typed API surface, test harness.
+Status: add-in host, embedded Python, task-pane editor + REPL, auto-typed API, Pythonic model layer (51 live tests).
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/RESEARCH.md](docs/RESEARCH.md).
 
 ## Dev setup (Windows, no admin needed)
@@ -29,3 +29,19 @@ swpy.run("doc.GetTitle()")             # -> {'ok': True, 'result': "'Part1'", 's
 
 Inside scripts: `sw` (ISldWorks), `doc` (active IModelDoc2), `sldworks.IFoo(obj)` typed casts,
 `swconst` enums. Never import from `SolidWorks.Interop.*` directly (see RESEARCH.md §4).
+
+## Pythonic API (in scripts / REPL)
+
+```python
+model                                   # <Model 'Part1'> for the active document
+model.dims["D1@Boss-Extrude1"] = 30*mm  # SI units everywhere; rebuilds
+model.globals["Width"] = 120*mm         # global variables (equation manager)
+with model.batch():                     # many edits, one rebuild, no flicker
+    model.dims["D1@Boss-Extrude1"] = 25*mm
+    model.globals["Width"] = 90*mm
+model.faces.planar().normal(Z).largest().Select4(False, None)
+model.faces.radius(10*mm)               # cylindrical faces of radius 10 mm
+model.edges.parallel(Z).select()        # selects in the viewport
+model.mass["volume"]
+doc.FirstFeature().Name                 # raw API, auto-typed
+```

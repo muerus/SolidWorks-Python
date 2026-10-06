@@ -35,13 +35,17 @@ def active_doc():
 
 
 def _new_globals(name):
-    return {
+    from swpy import model as _model, units as _units
+    g = {
         "__name__": "__main__",
         "__swpy_session__": name,
         "sw": _sw,
         "sldworks": sldworks,
         "swconst": swconst,
+        "Model": _model.Model, "Vec": _model.Vec, "X": _model.X, "Y": _model.Y, "Z": _model.Z,
     }
+    g.update({k: getattr(_units, k) for k in ("mm", "cm", "m", "inch", "ft", "deg", "rad", "kg", "g", "to")})
+    return g
 
 
 def _split_trailing_expression(tree):
@@ -60,8 +64,13 @@ def run(session, code):
     g["sw"] = _sw
     try:
         g["doc"] = active_doc()
+        if g["doc"] is not None:
+            from swpy.model import Model
+            g["model"] = Model(g["doc"])
+        else:
+            g["model"] = None
     except Exception:   # never let a doc lookup block running code (e.g. the reload that fixes it)
-        g["doc"] = None
+        g["doc"] = g["model"] = None
 
     out = io.StringIO()
     res = {"ok": True, "stdout": "", "result": None, "error": None}

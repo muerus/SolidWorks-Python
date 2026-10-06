@@ -23,7 +23,7 @@ CANDIDATES = (
     "ISurface", "ICurve",
     "IComponent2", "IMate2", "IConfiguration", "IConfigurationManager",
     "IDimension", "IDisplayDimension", "IAnnotation", "INote",
-    "IView", "ISheet",
+    "IView", "ISheet", "IModelView", "IFrame", "ISketchRelationManager", "IDimXpertManager",
     "IModelDocExtension", "IFeatureManager", "ISketchManager", "ISelectionMgr",
     "ICustomPropertyManager", "IEquationMgr", "IMassProperty",
     "IMathUtility", "IMathPoint", "IMathVector", "IMathTransform",

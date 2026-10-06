@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **All SOLIDWORKS API libraries**: Simulation (`cosworks`), motion studies, DimXpert, Routing, Costing,
+  Design Checker, FeatureWorks, Utilities, Toolbox, Sustainability, 3D printing, Design Library,
+  command IDs (`swcommands`), Document Manager, PDM (`EdmLib`) and Workgroup PDM - typed casts and
+  constants generated for each, available in scripts under their interop namespace names.
+- Objects returned as plain `object` are typed across all libraries (detection cached per COM class).
+- Editor completion learns the actual return types of `object`-returning API members once code ran.
 - **Task-pane IDE**: tabs with automatic backups of untitled scripts, recent files, IntelliSense from the
   live session (follows SOLIDWORKS API return types without executing), signature help, hover info,
   F1 to the online SOLIDWORKS API help, live syntax checking, runtime-error markers, find/replace with

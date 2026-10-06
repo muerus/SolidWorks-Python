@@ -55,6 +55,10 @@ part.FeatureManager.FeatureExtrusion2(...).   # -> IFeature members (Name, GetTy
 model.faces.largest().                        # -> IFace2 members
 ```
 
+Many API methods are declared as returning a plain `object` (for example `GetMotionStudyManager()`).
+Once your code has called such a method, the editor remembers what it returned and completes its result
+from then on.
+
 Variables that do not exist yet (you have not run the script) are inferred from their assignment in
 the editor: after `x = sldworks.IPartDoc(doc)` the editor knows `x.` is an `IPartDoc`, and inside
 `for f in model.faces:` it knows `f.` is a face.

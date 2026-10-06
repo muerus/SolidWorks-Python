@@ -173,9 +173,27 @@ typed .NET array inferred from the elements (objects, `bool`, `int`, `float`, `s
 A list from a primitive .NET array that remembers its `element_type`, so passing it back recreates
 exactly that array (e.g. persistent reference IDs as `byte[]`).
 
-### `is_com(value)`, `interfaces_of(raw)`, `identity(raw)`
-Low-level helpers: whether a value is a COM object; names of the built-in interfaces it implements;
-its COM identity (an integer, equal for all references to the same object).
+### `is_com(value)`, `interfaces_of(raw, detect=True)`, `identity(raw)`
+Low-level helpers: whether a value is a COM object; the interfaces it implements (curated list first,
+then - with `detect` - every interface of every API library); its COM identity (an integer, equal for
+all references to the same object).
+
+### Interface names
+Interfaces of the core library are named plainly (`"IFace2"`); interfaces of other API libraries are
+qualified with the library (`"swmotionstudy.IMotionStudyManager"`). `Com.interfaces`, `as_()` and
+`prefer=` all use these names.
+
+| Function | Description |
+|---|---|
+| `detect_all(raw)` | Comma-separated interfaces from the full cross-library check (cached per COM class) |
+| `caster(name)` | The typed-view function for an interface name |
+| `net_type(name)` | The .NET interop type of an interface name, or `None` |
+| `qualified_name(net_type)` | Interface name of a .NET interop type (`"IFace2"`, `"cosworks.ICWStudy"`), or `None` |
+| `library_casts(library)` | The generated cast class of a library (loads its interop assembly) |
+
+### `observed_returns`
+`{(interface, member): interfaces}` - what API members declared as returning `object` actually returned
+when code last ran. Used by editor completion.
 
 ### `CANDIDATES`
 The interface names `Com` detects automatically, most specific first.
@@ -191,7 +209,13 @@ interface, or `None` for `None`. `dir(sldworks)` lists all ~930 interfaces.
 ### `swconst`
 All SOLIDWORKS API enumerations as classes of integer constants, e.g.
 `swconst.swDocumentTypes_e.swDocPART == 1`. Generated from the interop assembly
-(`tools/gen_interop.py`).
+(`tools/gen_interop.py`). Every enum class also has `name(value)` (reverse lookup) and `items()`.
+
+### Other API libraries: `cosworks`, `swmotionstudy`, `swdimxpert`, ...
+One object per library ([list](05-solidworks-api.md#other-api-libraries)), predefined in scripts and in
+`swpy._interop.libraries`. `<library>.<Interface>(obj)` casts (returns a `Com` preferring
+`"<library>.<Interface>"`, `None` for `None`); `<library>.<Enum_e>` are its constants (generated into
+`swpy.libs.<library>`). `swpy.libs.LIBRARIES` holds the metadata (title, namespace, counts).
 
 ---
 

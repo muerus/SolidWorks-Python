@@ -15,6 +15,8 @@ from System.Runtime.InteropServices import Marshal
 
 from SwPy.Scripting import Cast
 
+from swpy.libs import LIBRARIES
+
 # Most specific / most useful first: attribute lookup tries interfaces in this order.
 CANDIDATES = (
     "IModelDoc2", "IPartDoc", "IAssemblyDoc", "IDrawingDoc",
@@ -63,12 +65,70 @@ except ImportError:
 _CANDIDATES_CSV = ",".join(n for n, _ in _TYPES)
 
 
-def interfaces_of(raw):
-    """Names of the curated interfaces this COM object implements, in priority order."""
+def interfaces_of(raw, detect=True):
+    """Interfaces this COM object implements, in priority order: the curated sldworks list first; if none
+    match (and detect), every interface of every API library ('IFoo' for sldworks, 'library.IFoo' else)."""
     if _ComInfo is not None:
         found = _ComInfo.Implemented(raw, _CANDIDATES_CSV)
+        if not found and detect:
+            found = detect_all(raw)
         return found.split(",") if found else []
     return [n for n, t in _TYPES if t.IsInstanceOfType(raw)]
+
+
+def detect_all(raw):
+    """Comma-separated interfaces from the full cross-library sweep ('' if unavailable)."""
+    if _ComInfo is None or not hasattr(_ComInfo, "Detect"):
+        return ""
+    return _ComInfo.Detect(raw)
+
+
+# ---------------------------------------------------------------- other API libraries
+
+_UNTYPED = {"__ComObject", "Object", "object"}
+_LIBRARY_CASTS = {}
+_NAMESPACES = {m["namespace"]: lib for lib, m in LIBRARIES.items()}
+
+
+def library_casts(library):
+    """Generated C# cast class of an API library; its interop assembly loads on first use."""
+    cls = _LIBRARY_CASTS.get(library)
+    if cls is None:
+        import importlib
+        module = importlib.import_module("SwPy.Scripting.Libraries")
+        cls = _LIBRARY_CASTS[library] = getattr(module, LIBRARIES[library]["casts"])
+    return cls
+
+
+def caster(name):
+    """Typed-view function for an interface name: 'IFace2' (sldworks) or 'cosworks.ICWStudy'."""
+    if "." in name:
+        library, iface = name.split(".", 1)
+        return getattr(library_casts(library), iface)
+    return getattr(Cast, name)
+
+
+def net_type(name):
+    """System.Type of an interface name ('IFace2' or 'cosworks.ICWStudy'), or None if unknown."""
+    if not name:
+        return None
+    if "." in name:
+        library, iface = name.split(".", 1)
+        if library not in LIBRARIES:
+            return None
+        method = clr.GetClrType(library_casts(library)).GetMethod(iface)
+        return method.ReturnType if method is not None else None
+    return _ASM.GetType("SolidWorks.Interop.sldworks." + name)
+
+
+def qualified_name(net_type_):
+    """Interface name as used by Com for a .NET interop type ('IFace2', 'cosworks.ICWStudy'), or None."""
+    if net_type_ is None or not net_type_.IsInterface:   # e.g. pythonnet's FeatureClass coclass wrappers
+        return None
+    if net_type_.Namespace == "SolidWorks.Interop.sldworks":
+        return net_type_.Name
+    library = _NAMESPACES.get(net_type_.Namespace)
+    return f"{library}.{net_type_.Name}" if library else None
 
 
 def identity(raw):
@@ -152,14 +212,24 @@ class Com:
     def __init__(self, raw, prefer=None):
         while type(raw).__name__ == "Com":   # also (nested) proxies from before a module reload
             raw = raw._raw
-        names = interfaces_of(raw)
+        names = interfaces_of(raw, detect=False)
         declared = type(raw).__name__
         if declared in _KNOWN and declared not in names:
             names.insert(0, declared)
+        elif declared not in _KNOWN and declared not in _UNTYPED:   # typed by a declared return type
+            try:
+                qualified = qualified_name(clr.GetClrType(type(raw)))
+            except Exception:
+                qualified = None
+            if qualified and qualified not in names:
+                names.insert(0, qualified)
         if prefer:
             if prefer in names:
                 names.remove(prefer)
             names.insert(0, prefer)
+        if not names:   # nothing known: sweep every API library (cached per COM class)
+            found = detect_all(raw)
+            names = found.split(",") if found else []
         object.__setattr__(self, "_raw", raw)
         object.__setattr__(self, "_names", tuple(names))
         object.__setattr__(self, "_views", [None] * len(names))   # typed views, created on demand
@@ -180,7 +250,7 @@ class Com:
     def _view(self, i):
         v = self._views[i]
         if v is None:
-            v = self._views[i] = getattr(Cast, self._names[i])(self._raw)
+            v = self._views[i] = caster(self._names[i])(self._raw)
         return v
 
     def _all_views(self):
@@ -196,8 +266,8 @@ class Com:
             except AttributeError:
                 continue
             if _is_method(attr):
-                return _bound(attr)
-            return auto(attr)
+                return _bound(attr, self._names, name)
+            return _observe(self._names, name, auto(attr))
         raise AttributeError(f"{'/'.join(self._names) or 'COM object'} has no attribute {name!r}")
 
     def __setattr__(self, name, value):
@@ -226,9 +296,22 @@ class Com:
         return f"<{kind} {label!r}>" if label else f"<{kind}>"
 
 
-def _bound(method):
+# (interface, member) -> interfaces of the object it last returned. Many API members are declared as
+# returning `object`; after code ran once, the editor completes their results from this.
+observed_returns = {}
+
+
+def _observe(owner_names, member, result):
+    if type(result).__name__ == "Com" and result._names:
+        for n in owner_names:
+            observed_returns[(n, member)] = result._names
+    return result
+
+
+def _bound(method, owner_names=(), member=None):
     def call(*args, **kwargs):
-        return auto(method(*[unwrap(a) for a in args], **{k: unwrap(v) for k, v in kwargs.items()}))
+        result = auto(method(*[unwrap(a) for a in args], **{k: unwrap(v) for k, v in kwargs.items()}))
+        return _observe(owner_names, member, result) if member else result
     call.__name__ = getattr(method, "__name__", "method")
     call.__doc__ = getattr(method, "__doc__", None)
     return call

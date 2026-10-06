@@ -62,6 +62,8 @@ print(model.mass["mass"], "kg")
 - Automatic typing: no casts. Objects expose the members of every interface they implement.
 - All enums (`swconst`), typed casts (`sldworks.IFoo`), Python lists for arrays, tuples for
   out-parameters.
+- **Every SOLIDWORKS API library**: Simulation, Motion, DimXpert, Routing, Costing, PDM, Document
+  Manager, Utilities, Toolbox ... (`cosworks.ICosmosWorks(obj)`, `swcommands.swCommands_e`).
 
 **Packages and automation**
 - `# r: numpy, pandas` installs pip packages per user on first run.

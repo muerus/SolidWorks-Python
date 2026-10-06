@@ -33,3 +33,60 @@ class _Casts:
 
 
 sldworks = _Casts()
+
+
+class _Library:
+    """One SOLIDWORKS API library besides sldworks, e.g. `cosworks` (Simulation).
+
+    `cosworks.ICosmosWorks(obj)` casts like `sldworks.IFoo(obj)`; `cosworks.swsAnalysisStudyType_e` are its
+    constants. Nothing is loaded until first use.
+    """
+
+    def __init__(self, name):
+        from swpy.libs import LIBRARIES
+        object.__setattr__(self, "_name", name)
+        object.__setattr__(self, "_meta", LIBRARIES[name])
+
+    def _constants(self):
+        import importlib
+        return importlib.import_module(f"swpy.libs.{self._name}")
+
+    def __getattr__(self, attr):
+        if attr.startswith("_"):
+            raise AttributeError(attr)
+        constants = self._constants()
+        if hasattr(constants, attr) and not attr.startswith("_"):
+            value = getattr(constants, attr)
+        else:
+            from swpy.com import library_casts
+            if not hasattr(library_casts(self._name), attr):
+                raise AttributeError(f"{self._name} ({self._meta['title']}) has no interface or constant {attr!r}")
+            qualified = f"{self._name}.{attr}"
+
+            def value(obj):
+                return None if obj is None else Com(obj, prefer=qualified)
+            value.__name__ = attr
+            value.__swpy_interface__ = qualified
+            value.__doc__ = f"View a {self._meta['title']} object as {attr} (typed Com proxy, None for None)."
+        object.__setattr__(self, attr, value)   # cache: also makes it visible to the editor's static lookups
+        return value
+
+    def __dir__(self):
+        from swpy.com import library_casts
+        import clr
+        from System.Reflection import BindingFlags
+        casts = [m.Name for m in clr.GetClrType(library_casts(self._name)).GetMethods(BindingFlags.Public | BindingFlags.Static)]
+        constants = [n for n in vars(self._constants()) if not n.startswith("_")]
+        return sorted(set(casts) | set(constants))
+
+    def __repr__(self):
+        m = self._meta
+        return f"<{m['title']} API ({self._name}): {m['interfaces']} interfaces, {m['enums']} enums>"
+
+
+def _libraries():
+    from swpy.libs import LIBRARIES
+    return {name: _Library(name) for name in LIBRARIES}
+
+
+libraries = _libraries()   # {"cosworks": <Simulation API>, "swmotionstudy": ..., "EdmLib": ...}

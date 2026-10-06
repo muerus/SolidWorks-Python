@@ -49,6 +49,14 @@ Many API methods **fail silently**: they return `None`, `False` or an error code
 | `NameError: name 'doc' ...` / `doc` is `None` | No document is open (or the active window is not a document) |
 | `RuntimeError: pip install failed` | See the pip output in the message: no internet, a typo in the package name, or no wheel for Python 3.12 x64 |
 
+## Other API libraries
+
+* `<COM object>` with no members: the object belongs to an API library that is not installed, or to an
+  interface no library declares. Check `obj.interfaces`; cast explicitly if you know the interface.
+* The first call into Costing or Simulation takes long: SOLIDWORKS loads the add-in at that moment.
+* Simulation / Routing / Toolbox objects are only available when the add-in is licensed and loaded
+  (*Tools > Add-Ins*).
+
 ## Types and units
 
 * Values are SI: a dimension of 30 mm reads `0.03`. Use `to(x, mm)` to display.

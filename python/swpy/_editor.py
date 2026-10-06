@@ -62,7 +62,11 @@ class _Func:
 
 
 def _net_type(name):
-    return _com._ASM.GetType(f"{INTEROP_NS}.{name}") if name else None
+    """Interop type of 'IFace2' (sldworks) or 'cosworks.ICWStudy' (other API libraries)."""
+    try:
+        return _com.net_type(name)
+    except Exception:
+        return None
 
 
 def _wrap(obj):
@@ -81,7 +85,7 @@ def _from_net_type(t):
         return None
     if t.IsByRef:
         t = t.GetElementType()
-    if t.Namespace == INTEROP_NS:
+    if _com.qualified_name(t):          # sldworks or any other SOLIDWORKS API library
         return _Net([t])
     py = _PY_EQUIVALENT.get(t.FullName)
     return _Inst(py) if py else None
@@ -260,6 +264,8 @@ def _attr(v, name):
             if isinstance(m, list):
                 return _NetMethod(t, name, m)
             if m is not None:
+                if m.PropertyType.FullName == "System.Object":
+                    return _observed(t, name)
                 return _from_net_type(m.PropertyType)
         return None
     if isinstance(v, _Inst):
@@ -331,9 +337,18 @@ def _apply_ops(v, ops):
     return v
 
 
+def _observed(owner, member):
+    """Interfaces this member returned when code last ran (for members declared as returning object)."""
+    names = _com.observed_returns.get((_com.qualified_name(owner), member))
+    return _Net(_net_type(n) for n in names) if names else None
+
+
 def _call(v):
     if isinstance(v, _NetMethod):
-        return _from_net_type(v.overloads[0].ReturnType)
+        declared = _from_net_type(v.overloads[0].ReturnType)
+        if declared is None or v.overloads[0].ReturnType.FullName == "System.Object":
+            return _observed(v.owner, v.name) or declared
+        return declared
     if isinstance(v, _Func):
         return _annotated(v.func, v.owner)
     if isinstance(v, _Val):
@@ -492,8 +507,9 @@ def _signatures(v, label):
     if isinstance(v, _Val):
         iface = getattr(v.obj, "__swpy_interface__", None)
         if iface:
-            return [{"label": f"{iface}(obj) -> {iface}", "params": [[len(iface) + 1, len(iface) + 4]],
-                     "doc": f"View a SOLIDWORKS object as {iface} (typed proxy)."}]
+            short = iface.rsplit(".", 1)[-1]
+            return [{"label": f"{short}(obj) -> {short}", "params": [[len(short) + 1, len(short) + 4]],
+                     "doc": v.obj.__doc__ or f"View a SOLIDWORKS object as {short} (typed proxy)."}]
         s = _py_signature(v.obj, label)
         return [s] if s else []
     return []
@@ -582,6 +598,8 @@ def _static_or_none(v, name):
 
 
 def _help_topic(t, member):
+    if t.Namespace != INTEROP_NS:   # other libraries have their own help sets: F1 falls back to the help home
+        return None
     iface = _iface_name(t)
     topic = f"{INTEROP_NS}~{INTEROP_NS}.{iface}" + (f"~{member}" if member else "")
     return HELP_URL.format(year=_sw_year(), topic=topic)

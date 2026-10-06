@@ -18,7 +18,9 @@ powershell tools\register.ps1                      # per-user COM registration o
 ```
 
 After a SOLIDWORKS upgrade regenerate the interop bindings: `.venv\Scripts\python tools\gen_interop.py`
-(writes `src/SwPy.AddIn/Scripting/Cast.g.cs` and `python/swpy/swconst.py`).
+(writes `src/SwPy.AddIn/Scripting/Cast.g.cs`, `python/swpy/swconst.py`, and for every other API library
+listed in `LIBRARIES` there: `src/SwPy.AddIn/Scripting/Libraries.g.cs` and `python/swpy/libs/`; add
+the library's `<Reference>` to `SwPy.AddIn.csproj` when you add one).
 
 ## Running the tests
 
@@ -35,6 +37,7 @@ changes are used directly), loads the add-in and runs everything against it:
 | `test_host.py` | Sessions, output, errors, results |
 | `test_com.py` | Auto-typed proxies, arrays, casts |
 | `test_model.py` | Units, dims, globals, batch, queries, planes |
+| `test_libraries.py` | Other API libraries: typing, casts, constants, detection safety |
 | `test_editor.py` | Editor services: completion, signatures, hover, syntax check |
 | `test_pane.py` | Task pane via the `Pane()` automation hook: running, REPL, tabs, find, IntelliSense |
 | `test_client.py`, `test_packages.py` | Remote client, `# r:` installs |

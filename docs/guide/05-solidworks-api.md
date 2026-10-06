@@ -104,6 +104,78 @@ cpm = doc.Extension.get_CustomPropertyManager("")      # "" = document-level pro
 print(cpm.GetNames())
 ```
 
+## Other API libraries
+
+Besides the core API (`sldworks` + `swconst`), SOLIDWORKS ships separate API libraries for its modules
+and add-ins. All of them are available in scripts under the name of their interop namespace, exactly as
+in VBA/C# samples (`SolidWorks.Interop.cosworks` -> `cosworks`):
+
+| Name | Library | Typical entry point |
+|---|---|---|
+| `cosworks` | SOLIDWORKS Simulation | `sw.GetAddInObject("SldWorks.Simulation").CosmosWorks` (Simulation add-in loaded) |
+| `swmotionstudy` | Motion studies / animation | `doc.Extension.GetMotionStudyManager()` |
+| `swdimxpert` | DimXpert | `doc.Extension.get_DimXpertManager(config, True).DimXpertPart` |
+| `SWRoutingLib` | Routing (piping, tubing, electrical) | Routing add-in |
+| `sldcostingapi` | Costing | `doc.Extension.GetCostingManager()` |
+| `dsgnchk` | Design Checker | Design Checker add-in |
+| `fworks` | FeatureWorks | FeatureWorks add-in |
+| `gtswutilities` | Utilities (compare, simplify ...) | Utilities add-in |
+| `sldtoolboxconfigureaddin` | Toolbox configuration | Toolbox add-in |
+| `sustainability` | Sustainability | Sustainability add-in |
+| `sw3dprinter` | 3D printing | `sw3dprinter` add-in |
+| `swbrowser` | Design Library browser | |
+| `swcommands` | Command IDs for `sw.RunCommand` | `swcommands.swCommands_e` |
+| `swdocumentmgr` | Document Manager (read files without SOLIDWORKS) | needs a Document Manager licence key from SOLIDWORKS |
+| `EdmLib` | SOLIDWORKS PDM Professional | needs the PDM client |
+| `pdmworks` | Workgroup PDM (legacy) | |
+
+Each name gives both the library's **interfaces** (as casts) and its **constants**:
+
+```python live
+print(cosworks)                                              # <SOLIDWORKS Simulation API (cosworks): ...>
+print(cosworks.swsAnalysisStudyType_e.swsAnalysisStudyTypeStatic)
+
+msm = doc.Extension.GetMotionStudyManager()                  # declared as `object` in the API ...
+print(msm, msm.GetMotionStudyNames())                        # ... typed automatically anyway
+study = msm.GetMotionStudy(msm.GetMotionStudyNames()[0])
+print(swmotionstudy.swMotionStudyType_e.name(study.StudyType))
+
+config = doc.ConfigurationManager.ActiveConfiguration.Name
+dimxpert = doc.Extension.get_DimXpertManager(config, True).DimXpertPart
+print(dimxpert, dimxpert.GetFeatureCount(), "DimXpert features")
+```
+
+Objects from these libraries are typed automatically like core objects. When a method is declared as
+returning a plain `object`, SwPy asks the object which interfaces it implements (checked once per kind
+of object, then cached), so `msm` above is an `swmotionstudy.IMotionStudyManager` without a cast. Cast
+explicitly with `swmotionstudy.IMotionStudyManager(obj)` when you prefer.
+
+Menu commands can be run by ID with `swcommands`:
+
+```python live
+sw.RunCommand(swcommands.swCommands_e.swCommands_ZoomToFit, "")
+```
+
+Notes:
+
+* A library is only usable when its product is installed and licensed, and add-in based ones need the
+  add-in loaded (*Tools > Add-Ins*). The first call into some add-ins (Costing, Simulation) can take a
+  while because SOLIDWORKS loads the add-in then.
+* The Document Manager and PDM APIs do not hang off `sw`: create their entry objects from the COM
+  ProgID used in the SOLIDWORKS samples, then cast:
+
+  ```python
+  import System
+  def create(progid):
+      return System.Activator.CreateInstance(System.Type.GetTypeFromProgID(progid))
+
+  factory = swdocumentmgr.ISwDMClassFactory(create("SwDocumentMgr.SwDMClassFactory"))
+  dm = factory.GetApplication(MY_DOCUMENT_MANAGER_KEY)        # licence key from SOLIDWORKS
+
+  vault = EdmLib.IEdmVault5(create("ConisioLib.EdmVault"))   # PDM client installed
+  vault.LoginAuto("MyVault", 0)
+  ```
+
 ## Translating VBA and C# examples
 
 The API help is full of VBA and C# samples. They translate almost line by line:

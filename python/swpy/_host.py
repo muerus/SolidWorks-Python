@@ -16,7 +16,7 @@ from swpy import packages
 
 packages.site_dir()   # previously installed `# r:` packages are importable in every session
 
-from swpy._interop import sldworks, swconst
+from swpy._interop import libraries, sldworks, swconst
 from swpy.com import Com
 
 _sw = globals().get("_sw")              # Com(ISldWorks), set by attach()
@@ -47,6 +47,7 @@ def _new_globals(name):
         "sw": _sw,
         "sldworks": sldworks,
         "swconst": swconst,
+        **libraries,                       # cosworks, swmotionstudy, swdimxpert, EdmLib ... (lazy)
         "Model": _model.Model, "Vec": _model.Vec, "X": _model.X, "Y": _model.Y, "Z": _model.Z,
     }
     g.update({k: getattr(_units, k) for k in ("mm", "cm", "m", "inch", "ft", "deg", "rad", "kg", "g", "to")})

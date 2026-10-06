@@ -1,14 +1,80 @@
 title: SwPy - Python for SOLIDWORKS
-description: Real Python inside SOLIDWORKS - task-pane IDE, Pythonic API, every SOLIDWORKS API library.
+description: >-
+  SwPy runs real Python inside SOLIDWORKS - a task-pane editor with IntelliSense, a Pythonic API for parts,
+  assemblies and drawings, and every SOLIDWORKS API library. Free, open source, no admin rights needed.
+url: https://muerus.github.io
+baseurl: /SolidWorks-Python
+lang: en
+author: muerus
+logo: /images/social-preview.png
+image: /images/social-preview.png
+github:
+  repository_url: https://github.com/muerus/SolidWorks-Python
 theme: jekyll-theme-cayman
 plugins:
   - jekyll-relative-links
   - jekyll-readme-index
+  - jekyll-titles-from-headings
+  - jekyll-seo-tag
+  - jekyll-sitemap
 relative_links:
   enabled: true
   collections: false
+titles_from_headings:
+  enabled: true
+  strip_title: false
 markdown: kramdown
 kramdown:
   input: GFM
 exclude:
   - RESEARCH.md
+
+# Search snippets per page (kept here so the markdown files on GitHub stay clean)
+defaults:
+  - scope: {path: "index.md"}
+    values:
+      title: "SwPy - Python for SOLIDWORKS: scripting, API and automation"
+      description: "Write SOLIDWORKS macros in Python instead of VBA: task-pane IDE with IntelliSense, Pythonic API for parts, assemblies and drawings, events and script buttons."
+  - scope: {path: "guide/README.md"}
+    values:
+      title: "SwPy user guide - Python for SOLIDWORKS"
+      description: "Complete guide to automating SOLIDWORKS with Python: install, editor, model API, SOLIDWORKS API from Python, events, script buttons, building models."
+  - scope: {path: "guide/01-getting-started.md"}
+    values:
+      description: "Install SwPy and run your first Python script inside SOLIDWORKS - no admin rights or Python install needed."
+  - scope: {path: "guide/02-editor.md"}
+    values:
+      description: "The SwPy editor in the SOLIDWORKS task pane: IntelliSense for the SOLIDWORKS API, parameter hints, F1 API help, find/replace, shortcuts."
+  - scope: {path: "guide/03-scripting-basics.md"}
+    values:
+      description: "Python scripting basics for SOLIDWORKS: the active document, sessions, output, errors and SI units."
+  - scope: {path: "guide/04-model-api.md"}
+    values:
+      description: "Change SOLIDWORKS dimensions and global variables from Python, batch edits, mass properties and face/edge queries."
+  - scope: {path: "guide/05-solidworks-api.md"}
+    values:
+      description: "Use the SOLIDWORKS API from Python: IModelDoc2, casts, swconst enums, arrays, out-parameters, porting VBA macros, Simulation, PDM and Motion APIs."
+  - scope: {path: "guide/06-packages.md"}
+    values:
+      description: "Use pip packages like numpy, pandas and openpyxl in SOLIDWORKS Python scripts."
+  - scope: {path: "guide/07-remote-control.md"}
+    values:
+      description: "Drive SOLIDWORKS from Jupyter notebooks, Python scripts, Excel VBA or C# with SwPy."
+  - scope: {path: "guide/08-recipes.md"}
+    values:
+      description: "SOLIDWORKS Python examples: create parts, parameter studies, export STEP/STL, custom properties, assemblies, batch processing."
+  - scope: {path: "guide/09-troubleshooting.md"}
+    values:
+      description: "Troubleshooting SOLIDWORKS Python scripts and the SwPy add-in: logs, common API errors and fixes."
+  - scope: {path: "guide/10-events.md"}
+    values:
+      description: "React to SOLIDWORKS events in Python: rebuild, save, selection, document open and close."
+  - scope: {path: "guide/11-scripts-and-ui.md"}
+    values:
+      description: "Turn Python scripts into SOLIDWORKS toolbar buttons, run startup scripts, show progress bars and dialogs."
+  - scope: {path: "guide/12-building-models.md"}
+    values:
+      description: "Create SOLIDWORKS sketches, extrudes, cuts, fillets, assemblies with mates and drawings from Python."
+  - scope: {path: "guide/api-reference.md"}
+    values:
+      description: "API reference of swpy, the Python package for SOLIDWORKS: Model, queries, events, ui, build, assembly, drawing."

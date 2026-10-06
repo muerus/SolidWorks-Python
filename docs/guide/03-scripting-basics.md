@@ -15,6 +15,8 @@ These names are predefined - no imports needed:
 | `X`, `Y`, `Z`, `Vec` | Unit vectors and the 3D vector type |
 | `swconst` | All SOLIDWORKS API enums: `swconst.swDocumentTypes_e.swDocPART` |
 | `sldworks` | Typed casts: `sldworks.IPartDoc(obj)` (rarely needed, see [chapter 5](05-solidworks-api.md#casts)) |
+| `on`, `off` | Subscribe / unsubscribe event handlers (see [Events](10-events.md)) |
+| `cosworks`, `swmotionstudy`, ... | The other SOLIDWORKS API libraries (see [chapter 5](05-solidworks-api.md#other-api-libraries)) |
 | `_` | The value of the last expression shown |
 
 `doc` and `model` are refreshed **at the start of every run**, so they always follow the document you

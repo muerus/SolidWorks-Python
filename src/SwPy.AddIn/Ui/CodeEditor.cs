@@ -77,7 +77,7 @@ namespace SwPy.Ui
         private const string Builtins =
             "abs all any bool dict dir enumerate filter float format getattr hasattr int isinstance len list map max " +
             "min next object open print range repr reversed round set sorted str sum super tuple type zip " +
-            "sw doc model swconst sldworks Model Vec X Y Z mm cm m inch ft deg rad kg g to";
+            "sw doc model swconst sldworks Model Vec X Y Z mm cm m inch ft deg rad kg g to on off";
 
         // Lexilla python f-string styles (SCE_P_FSTRING..SCE_P_FTRIPLEDOUBLE), not named by Scintilla.NET
         private const int FString = 16, FCharacter = 17, FTriple = 18, FTripleDouble = 19;

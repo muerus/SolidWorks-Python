@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **Events** (`swpy.events`, `on`/`off` in scripts): Python handlers for any SOLIDWORKS event with
+  friendly aliases, flexible handler signatures, error isolation, automatic removal on Reset, document
+  close and add-in unload.
 - **All SOLIDWORKS API libraries**: Simulation (`cosworks`), motion studies, DimXpert, Routing, Costing,
   Design Checker, FeatureWorks, Utilities, Toolbox, Sustainability, 3D printing, Design Library,
   command IDs (`swcommands`), Document Manager, PDM (`EdmLib`) and Workgroup PDM - typed casts and

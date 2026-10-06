@@ -68,6 +68,14 @@ namespace SwPy
             Log.Info("Disconnecting");
             try
             {
+                if (PythonHost.IsStarted) PythonHost.Get(this).Shutdown();   // event handlers off first
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Python shutdown failed", ex);
+            }
+            try
+            {
                 if (!Flag("SWPY_SKIP_DELETEVIEW")) _taskpane?.DeleteView();
                 if (_taskpane != null && !Flag("SWPY_SKIP_RELEASE")) Marshal.ReleaseComObject(_taskpane);
             }

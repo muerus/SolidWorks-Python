@@ -26,6 +26,7 @@ if _sw is not None and not isinstance(_sw, Com):   # upgraded from an older host
     _sw = Com(_sw, prefer="ISldWorks")
 
 FILENAME = "<swpy>"
+_current = None        # session of the run in progress (events registered now belong to it)
 
 
 def attach(raw_sw, addin):
@@ -40,7 +41,7 @@ def active_doc():
 
 
 def _new_globals(name):
-    from swpy import model as _model, units as _units
+    from swpy import events as _events, model as _model, units as _units
     g = {
         "__name__": "__main__",
         "__swpy_session__": name,
@@ -49,6 +50,7 @@ def _new_globals(name):
         "swconst": swconst,
         **libraries,                       # cosworks, swmotionstudy, swdimxpert, EdmLib ... (lazy)
         "Model": _model.Model, "Vec": _model.Vec, "X": _model.X, "Y": _model.Y, "Z": _model.Z,
+        "on": _events.on, "off": _events.off,
     }
     g.update({k: getattr(_units, k) for k in ("mm", "cm", "m", "inch", "ft", "deg", "rad", "kg", "g", "to")})
     return g
@@ -136,7 +138,9 @@ def run(session, code, stream=False):
 
     stream: forward stdout/stderr live to the add-in (editor pane) while running.
     """
+    global _current
     g = _session(session)
+    previous, _current = _current, session
     out = io.StringIO()
     live = bool(stream) and _addin is not None
     tee_out, tee_err = _Tee(out, False, live), _Tee(out, True, live)
@@ -161,6 +165,7 @@ def run(session, code, stream=False):
     finally:
         tee_out.flush()
         tee_err.flush()
+        _current = previous
     res["stdout"] = out.getvalue()
     return json.dumps(res)
 
@@ -174,7 +179,49 @@ def _format_user_error(e):
 
 
 def reset(session):
+    from swpy import events
+    events.remove_session(session)
     _sessions.pop(session, None)
+
+
+def current_session():
+    """Session of the run in progress ("editor" when called outside a run)."""
+    return _current or "editor"
+
+
+@contextlib.contextmanager
+def event_output():
+    """stdout/stderr for event handlers: inside a run they join its output, otherwise they go live to
+    the editor pane."""
+    if _current is not None or _addin is None:
+        yield
+        return
+    out = io.StringIO()
+    tee_out, tee_err = _Tee(out, False, True), _Tee(out, True, True)
+    try:
+        with contextlib.redirect_stdout(tee_out), contextlib.redirect_stderr(tee_err):
+            yield
+    finally:
+        tee_out.flush()
+        tee_err.flush()
+
+
+def report_error(text):
+    """Show an error from outside a run (event handlers) in the editor output."""
+    import sys
+    if _current is not None or _addin is None:
+        sys.stderr.write(text)
+        return
+    try:
+        _addin.Write(text, True)
+    except Exception:
+        pass
+
+
+def shutdown():
+    """Add-in unload: detach every event handler before SOLIDWORKS releases its objects."""
+    from swpy import events
+    return events.remove_all()
 
 
 def reload_package():

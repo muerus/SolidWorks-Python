@@ -65,6 +65,10 @@ print(model.mass["mass"], "kg")
 - **Every SOLIDWORKS API library**: Simulation, Motion, DimXpert, Routing, Costing, PDM, Document
   Manager, Utilities, Toolbox ... (`cosworks.ICosmosWorks(obj)`, `swcommands.swCommands_e`).
 
+**Events**
+- `@on(doc, "rebuild")`, `on(sw, "active_doc", fn)`: Python handlers for any SOLIDWORKS event, isolated
+  from errors and removed automatically on Reset, document close and unload.
+
 **Packages and automation**
 - `# r: numpy, pandas` installs pip packages per user on first run.
 - `swpy.client`: drive SOLIDWORKS from Jupyter or any Python. Excel VBA and C# can call the same COM
@@ -127,6 +131,7 @@ The **[user guide](docs/guide/README.md)** covers everything:
 | [Remote control](docs/guide/07-remote-control.md) | Jupyter, scripts, Excel, C# |
 | [Recipes](docs/guide/08-recipes.md) | Parts from scratch, studies, exports, properties, assemblies |
 | [Troubleshooting](docs/guide/09-troubleshooting.md) | Logs and common errors |
+| [Events](docs/guide/10-events.md) | Handlers for rebuilds, saves, selections, document switches |
 | [API reference](docs/guide/api-reference.md) | Every public class and function |
 
 Every runnable example in the guide is executed against SOLIDWORKS by the test suite.

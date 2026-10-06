@@ -111,6 +111,16 @@ namespace SwPy.Scripting
             }
         }
 
+        /// <summary>Add-in unload: detach Python event handlers (swpy._host.shutdown).</summary>
+        public void Shutdown()
+        {
+            using (Py.GIL())
+            using (var detached = _host.InvokeMethod("shutdown"))
+            {
+                Log.Info($"Detached {detached.As<int>()} event handler(s)");
+            }
+        }
+
         public void Reset(string session)
         {
             using (Py.GIL())

@@ -7,6 +7,7 @@ All names below are SI-based. In editor scripts the most used ones are predefine
 * [`swpy.model`](#swpymodel) - `Model`, queries, `Vec`, `Planes`, `Dims`, `Globals`
 * [`swpy.com`](#swpycom) - auto-typed proxies over SOLIDWORKS objects
 * [`swpy._interop`](#interop-sldworks-and-swconst) - `sldworks` casts and `swconst` enums
+* [`swpy.events`](#swpyevents) - event handlers
 * [`swpy.packages`](#swpypackages) - `# r:` requirements
 * [`swpy.client`](#swpyclient) - remote control from another Python
 
@@ -216,6 +217,27 @@ One object per library ([list](05-solidworks-api.md#other-api-libraries)), prede
 `swpy._interop.libraries`. `<library>.<Interface>(obj)` casts (returns a `Com` preferring
 `"<library>.<Interface>"`, `None` for `None`); `<library>.<Enum_e>` are its constants (generated into
 `swpy.libs.<library>`). `swpy.libs.LIBRARIES` holds the metadata (title, namespace, counts).
+
+---
+
+## swpy.events
+
+See [Events](10-events.md). `on` and `off` are predefined in scripts.
+
+| Name | Description |
+|---|---|
+| `on(source, event, fn=None)` | Subscribe `fn` to `event` (API name or alias) of a SOLIDWORKS object; returns a `Handler`. Without `fn`: a decorator. Raises `ValueError` for unknown events or a `None` source |
+| `off(handler_or_fn)` | Remove a `Handler`, or all handlers using a function; returns how many |
+| `available(source)` | Aliases and API event names the source supports |
+| `handlers(session=None)` | Active handlers |
+| `remove_session(session)` | Remove a session's handlers (done by Reset) |
+| `remove_all()` | Remove every handler (done when the add-in unloads) |
+| `ALIASES` | `{alias: (API event names ...)}` |
+| `MAX_ERRORS` | Consecutive failures after which a handler is switched off (5) |
+
+### `class Handler`
+Returned by `on`. Attributes: `source`, `event`, `api_event`, `fn`, `session`, `active`, `calls`,
+`errors`; `remove()` unsubscribes (idempotent).
 
 ---
 

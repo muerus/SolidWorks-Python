@@ -163,9 +163,6 @@ SOLIDWORKS (SLDWORKS.exe, .NET Framework 4.8)
                         └─ swpy.model     Pythonic layer (units, dims, globals, queries)
 ```
 
-Design notes and research findings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
-[docs/RESEARCH.md](docs/RESEARCH.md).
-
 ## Project structure
 
 ```
@@ -176,9 +173,7 @@ Design notes and research findings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 ├── tests/                   live pytest suite (drives a real SOLIDWORKS)
 ├── tools/                   install/register scripts, runtime fetcher, interop generator
 ├── docs/
-│   ├── guide/               user guide and API reference
-│   ├── ARCHITECTURE.md      layers and milestones
-│   └── RESEARCH.md          findings that shaped the design
+│   └── guide/               user guide and API reference
 ├── pyproject.toml           package metadata (editable install for the client / dev tools)
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md

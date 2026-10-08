@@ -59,7 +59,7 @@ Notes:
 ## Conventions
 
 * **Never import `SolidWorks.Interop.*`** from Python - use `sldworks.IFoo(...)` casts and `swconst`
-  (other add-ins embed trimmed copies of the interop types; see `docs/RESEARCH.md`).
+  (other add-ins embed trimmed copies of the interop types).
 * Keep the C# layer thin; script plumbing lives in `swpy._host`, editor intelligence in `swpy._editor`.
 * Everything is SI internally.
 * Public Python API: docstrings and return annotations (they drive editor completion and hover), an entry

@@ -10,3 +10,8 @@ ai-context/
 *.egg-info/
 build/
 dist/
+
+# Local-only planning notes (not published)
+ROADMAP.md
+docs/ARCHITECTURE.md
+docs/RESEARCH.md

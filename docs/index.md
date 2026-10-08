@@ -37,5 +37,4 @@ Windows 10/11 x64, SOLIDWORKS 2020 or newer, no admin rights and no Python insta
 
 [Source on GitHub](https://github.com/muerus/SolidWorks-Python) ·
 [Changelog](https://github.com/muerus/SolidWorks-Python/blob/main/CHANGELOG.md) ·
-[Architecture](ARCHITECTURE.md) ·
 [Security](https://github.com/muerus/SolidWorks-Python/blob/main/SECURITY.md)

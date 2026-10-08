@@ -29,8 +29,6 @@ titles_from_headings:
 markdown: kramdown
 kramdown:
   input: GFM
-exclude:
-  - RESEARCH.md
 
 # Search snippets per page (kept here so the markdown files on GitHub stay clean)
 defaults:

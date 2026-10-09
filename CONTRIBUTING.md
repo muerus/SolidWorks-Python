@@ -37,6 +37,7 @@ changes are used directly), loads the add-in and runs everything against it:
 | `test_host.py` | Sessions, output, errors, results |
 | `test_com.py` | Auto-typed proxies, arrays, casts |
 | `test_model.py` | Units, dims, globals, batch, queries, planes |
+| `test_props.py` | Custom properties: types, links, configurations, errors |
 | `test_build.py` | Sketches, features, save/export, assemblies and mates, drawings |
 | `test_ui.py` | Script buttons (via the IDispatch callbacks), startup scripts, `swpy.ui` incl. real dialogs |
 | `test_events.py` | Event handlers: aliases, arguments, error isolation, lifetime |
@@ -53,6 +54,8 @@ Notes:
 * C# changes need SOLIDWORKS closed, a rebuild, and a new SOLIDWORKS process (the CLR never unloads the
   add-in). Python changes can be reloaded in a running SOLIDWORKS:
   `from swpy import _host; _host.reload_package()`.
+* To test Python changes without building and registering the add-in, point the harness at an
+  installed one: `$env:SWPY_ADDIN_DLL = "$env:LOCALAPPDATA\Programs\SwPy\bin\SwPy.AddIn.dll"`.
 * Parts are created from the user's default template; never rely on stock plane names
   (`model.planes`) or on selection state after API calls.
 

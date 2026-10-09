@@ -46,7 +46,8 @@ def test_guide_examples_run(swpy, name, blocks):
 
 # ---------------------------------------------------------------- API reference coverage (static)
 
-MODULES = ["units", "model", "com", "packages", "client", "events", "ui", "build", "assembly", "drawing"]
+MODULES = ["units", "model", "com", "packages", "client", "events", "ui", "build", "assembly", "drawing",
+           "props"]
 
 
 def _public_names(module):

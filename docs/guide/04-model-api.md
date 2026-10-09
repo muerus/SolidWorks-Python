@@ -1,7 +1,8 @@
 # 4. The model API
 
 `model` wraps the active document with a small, Pythonic API for the things scripts do most:
-dimensions, global variables, rebuild control, mass properties and finding faces and edges. For
+dimensions, global variables, custom properties, rebuild control, mass properties and finding faces
+and edges. For
 everything else, `model.doc` is the full SOLIDWORKS API ([chapter 5](05-solidworks-api.md)).
 
 The examples assume a part like the one the test suite uses: a 100 × 60 × 20 mm block
@@ -103,6 +104,47 @@ print(props["center"])                       # Vec(x, y, z) in metres
 
 Keys: `mass` (kg), `volume` (m³), `area` (m²), `center` (`Vec`, m), `density` (kg/m³). The values
 come from the material and density set in the document (or its template).
+
+## Custom properties
+
+`model.props` works like a dictionary of the document's custom properties. The property type follows
+the Python value: `str` → Text, `int`/`float` → Number, `bool` → Yes or no, `datetime.date` → Date.
+
+```python live
+import datetime
+
+model.props["PartNo"] = "P-1001"
+model.props["Quantity"] = 4
+model.props["Purchased"] = False
+model.props["Released"] = datetime.date(2026, 10, 8)
+model.props.link("Weight", "SW-Mass")          # linked to a system property (or a dimension name)
+
+for name, value in model.props.items().items():
+    print(f"{name:10} {value:12} {model.props.kind(name)}")
+
+print(model.props.raw("Weight"))               # '"SW-Mass@Part1.SLDPRT"' - the stored expression
+del model.props["Quantity"]
+```
+
+Reading always gives the **resolved** value as a string, the way SOLIDWORKS shows it in the
+*Evaluated Value* column (`"Yes"`, `"2026-10-08"`, `"127.85"`); `raw(name)` gives the text expression.
+Names are case-insensitive. Missing names raise `KeyError`, and the usual dictionary methods work
+(`in`, `get`, `update`, `pop`, `len`, iteration).
+
+`set(name, value, kind)` forces a type: `model.props.set("Code", 42, "text")`. Changing the type of
+an existing property moves it to the end of the list (SOLIDWORKS deletes and re-adds it).
+
+Configuration-specific properties (parts and assemblies) live under `config(name)`:
+
+```python live
+active = model.doc.ConfigurationManager.ActiveConfiguration.Name
+model.props.config(active)["Finish"] = "Anodized"
+print(model.props.config(active))              # Props[Default]({'Finish': 'Anodized'})
+```
+
+Notes: SOLIDWORKS keeps at most 6 decimals of a decimal number in the expression (the evaluated value
+keeps what you wrote), and a linked system property such as `SW-Mass` is evaluated in the document's
+units (grams with the default part template).
 
 ## Features and planes
 

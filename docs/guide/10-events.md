@@ -107,10 +107,7 @@ h.remove()
 from swpy import events
 
 def update_mass():
-    props = doc.Extension.get_CustomPropertyManager("")
-    props.Add3("MassKg", swconst.swCustomInfoType_e.swCustomInfoText,
-               f"{model.mass['mass']:.3f}",
-               swconst.swCustomPropertyAddOption_e.swCustomPropertyReplaceValue)
+    model.props["MassKg"] = f"{model.mass['mass']:.3f}"
 
 on(doc, "rebuild", update_mass)
 ```

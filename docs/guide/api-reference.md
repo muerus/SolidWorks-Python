@@ -48,6 +48,7 @@ Pythonic wrapper around an `IModelDoc2` (a proxy or a raw COM object). In script
 | `title` | Window title, e.g. `'Part1'` |
 | `dims` | [`Dims`](#class-dims) - dimensions by full name |
 | `globals` | [`Globals`](#class-globals) - equation-manager global variables |
+| `props` | [`Props`](#class-props) - custom properties (`props.config(name)` for a configuration) |
 | `mass` | `dict` with `mass` (kg), `volume` (m³), `area` (m²), `center` (`Vec`), `density` (kg/m³) |
 | `bodies(solid=True)` | Solid bodies (or surface bodies with `solid=False`) of a part, as `IBody2` |
 | `faces` | [`Faces`](#class-faces) query over all faces of all solid bodies |
@@ -108,6 +109,28 @@ Returned by `model.globals`.
 | `items()` | `{name: value}` |
 
 Raises `ValueError` if SOLIDWORKS rejects an expression.
+
+### `class Props`
+Returned by `model.props` (file properties) and `props.config(name)` (configuration properties);
+module `swpy.props`. A mutable mapping: `get`, `update`, `pop`, `keys`, `values`, `len`, iteration work.
+Names are case-insensitive.
+
+| Member | Description |
+|---|---|
+| `props[name]` | Resolved value (`str`), e.g. `'127.85'` for a link to `SW-Mass`; `KeyError` if missing |
+| `props[name] = value` | Create or update: `str` → Text, `int`/`float` → Number, `bool` → Yes or no, `date`/`datetime` → Date |
+| `set(name, value, kind=None)` | Same, with the type forced: `'text'`, `'number'`, `'yesno'` or `'date'` (numbers, `'Yes'`/`'No'` and `'YYYY-MM-DD'` strings accepted). A type change moves the property to the end |
+| `link(name, source)` | Text property linked to a system property (`'SW-Mass'`, `'SW-Material'` ...) or a dimension (`'D1@Boss-Extrude1'`) |
+| `raw(name)` | The stored expression |
+| `kind(name)` | `'text'`, `'number'`, `'yesno'` or `'date'` |
+| `del props[name]` | Delete; `KeyError` if missing |
+| `name in props`, `names()`, `items()` | Existence, names in SOLIDWORKS order, `{name: resolved value}` |
+| `config(name)` | `Props` of a configuration; `KeyError` if it does not exist (drawings have none) |
+| `config_name` | `''` for file properties, else the configuration name |
+
+Writes raise `TypeError` for unsupported values and `ValueError` for invalid ones (empty name, `nan`,
+text that is not a number or date) or when SOLIDWORKS rejects the property; the existing value is
+kept. `KINDS` maps `swCustomInfoType_e` values to these kind names.
 
 ### `class Query(list)`
 Base class of `Faces` and `Edges`: a list with chainable filters. Every filter returns a new query of

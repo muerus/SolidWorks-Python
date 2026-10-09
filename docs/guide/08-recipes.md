@@ -74,19 +74,17 @@ for ext in (".step", ".x_t", ".stl"):
 ## Custom properties
 
 ```python live
-props = doc.Extension.get_CustomPropertyManager("")    # "" = file properties; or a configuration name
-TEXT = swconst.swCustomInfoType_e.swCustomInfoText
-REPLACE = swconst.swCustomPropertyAddOption_e.swCustomPropertyReplaceValue
+model.props.update({"PartNo": "P-1001", "Description": "Base plate", "Revision": "A"})
+model.props.link("Material", "SW-Material")
 
-props.Add3("PartNo", TEXT, "P-1001", REPLACE)
-props.Add3("Description", TEXT, "Base plate", REPLACE)
-
-for name in props.GetNames() or []:
-    status, value, resolved, was_resolved, linked = props.Get6(name, False)
-    print(f"{name:12} {resolved}")
+for name, value in model.props.items().items():
+    print(f"{name:12} {value}")
 
 ok, errors, warnings = doc.Save3(swconst.swSaveAsOptions_e.swSaveAsOptions_Silent, 0, 0)
 ```
+
+`model.props` is described in [the model API](04-model-api.md#custom-properties); the raw API
+(`Add3`, `Get6`) in [chapter 5](05-solidworks-api.md#indexed-properties-get_x--set_x).
 
 ## Features by type, rename
 

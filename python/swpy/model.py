@@ -16,6 +16,7 @@ import re
 from swpy.com import Com
 from swpy.units import EQUATION_UNITS, mm
 from swpy.build import FeatureError, Sketch  # noqa: F401  (Model.sketch annotation; re-exported)
+from swpy.props import Props
 
 
 # ---------------------------------------------------------------- vectors
@@ -353,6 +354,12 @@ class Model:
     def globals(self) -> "Globals":
         """Global variables: model.globals["Width"] = 120 * mm."""
         return Globals(self)
+
+    @property
+    def props(self) -> "Props":
+        """Custom properties: model.props["PartNo"] = "P-100"; model.props.config("Default") for
+        configuration-specific ones."""
+        return Props(self)
 
     @property
     def mass(self) -> dict:

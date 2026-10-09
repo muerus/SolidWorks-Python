@@ -58,6 +58,8 @@ print(model.mass["mass"], "kg")
 **Pythonic API** (`swpy.model`)
 - SI units everywhere: `30 * mm`, `to(value, deg)`.
 - Dimensions and global variables as dictionaries, and `model.batch()` for one rebuild after many edits.
+- Custom properties as a dictionary: `model.props["PartNo"] = "P-100"`, typed values, links, per
+  configuration.
 - Mass properties, features, default planes that work with any template.
 - Chainable face/edge queries: `model.faces.cylindrical().radius(5 * mm).edges.circular().select()`.
 - Build geometry: `with model.sketch(model.planes.front) as s: s.rect(...)`, `model.extrude(s, 20 * mm)`,

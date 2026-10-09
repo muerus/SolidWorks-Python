@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **Custom properties**: `model.props` - a dictionary of file properties with types from the Python
+  value (text, number, yes/no, date), resolved values, `raw()` expressions, `kind()`, `link()` to system
+  properties and dimensions, and `props.config(name)` for configuration properties. Works around
+  SOLIDWORKS quirks (numbers in exponent notation and the literal "No" create broken or rejected
+  properties; a failed write never deletes the existing property).
+
 ## [0.2.0] - 2026-10-06 - first public release
 
 ### Security

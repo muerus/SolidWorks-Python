@@ -16,7 +16,8 @@ import win32com.client as w32
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SW_EXE = os.environ.get("SWPY_SW_EXE", r"C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe")
 PROGID = "SwPy.AddIn"
-DLL = os.path.join(ROOT, "src", "SwPy.AddIn", "bin", "Debug", "net48", "SwPy.AddIn.dll")
+# SWPY_ADDIN_DLL: test Python changes against an installed add-in instead of the Debug build
+DLL = os.environ.get("SWPY_ADDIN_DLL") or os.path.join(ROOT, "src", "SwPy.AddIn", "bin", "Debug", "net48", "SwPy.AddIn.dll")
 
 
 def _active():
